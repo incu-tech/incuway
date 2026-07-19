@@ -15,7 +15,7 @@ kind: Way
 metadata:
   name: incu/incu-way
   displayName: Incuway
-  version: 1.2.0
+  version: 1.3.0
   description: The incuway family — gated development, bug-fixing, security remediation, onboarding, docs, assessment, and ticket-refinement flows, installed as one way.
   discipline: development
   publisher: incu
@@ -24,6 +24,8 @@ metadata:
 
 spec:
   # All bundled: paths are relative to this repo root and exist in the bundle.
+  # `uses` (Slice 10) declares the slot ids each skill uses — the derivation source for
+  # the way's slots and the provenance bind/doctor show (`needed by: <skill>`).
   skills:
     - { id: init, path: skills/incu-way-init }
     - { id: docs, path: skills/incu-way-docs }
@@ -31,12 +33,12 @@ spec:
     - { id: security-validation, path: skills/incu-way-security-validation }
     - { id: threat-model, path: skills/incu-way-threat-model }
     - { id: po, path: skills/incu-way-po }
-    - { id: development, path: skills/incu-way-development }
-    - { id: bugs, path: skills/incu-way-bugs }
-    - { id: snyk-remediation, path: skills/snyk-remediation }
+    - { id: development, path: skills/incu-way-development, uses: [sast, sca, code-quality] }
+    - { id: bugs, path: skills/incu-way-bugs, uses: [sast, sca, code-quality] }
+    - { id: snyk-remediation, path: skills/snyk-remediation, uses: [sast, sca] }
     # The only skill that runs git add/commit/push or `gh pr create` — every flow defers
     # persistence to it, so an install without it dead-ends at every checkpoint.
-    - { id: prepare-pr, path: skills/incu-way-prepare-pr }
+    - { id: prepare-pr, path: skills/incu-way-prepare-pr, uses: [vcs-host] }
 
   # Knowledge/rules placed into the target project on `ways add` (steering).
   # Bundled as `file:` (works today: staged + placed with applicability frontmatter).
@@ -72,11 +74,38 @@ spec:
         required: true
         capability: vcs-host
 
-  capabilitySlots:
-    - { id: vcs-host, contract: ways.dev/vcs-host@1, required: true, providerSource: environment, options: [github, gitlab, bitbucket] }
-    - { id: sast, contract: ways.dev/sast@1, required: true, providerSource: environment, options: [snyk, semgrep] }
-    - { id: sca, contract: ways.dev/sca@1, required: true, providerSource: environment, options: [snyk] }
-    - { id: code-quality, contract: ways.dev/code-quality@1, required: true, providerSource: environment, options: [sonarqube] }
+  # Slice 10: the effective slot set derives from skills[].uses; these entries ENRICH
+  # the derived slots (display metadata + suggested impls). `capabilitySlots` is the
+  # deprecated alias of `needs` (declaring both is a schema error).
+  needs:
+    - id: vcs-host
+      displayName: Version-control host
+      description: Hosts the repo and PRs — where incu-way-prepare-pr opens and gates pull requests.
+      contract: ways.dev/vcs-host@1
+      required: true
+      providerSource: environment
+      options: [github, gitlab, bitbucket]
+    - id: sast
+      displayName: Static application security testing
+      description: Scans first-party code for vulnerabilities in each flow's validation phase.
+      contract: ways.dev/sast@1
+      required: true
+      providerSource: environment
+      options: [snyk, semgrep]
+    - id: sca
+      displayName: Software composition analysis
+      description: Scans dependencies for known vulnerabilities in each flow's validation phase.
+      contract: ways.dev/sca@1
+      required: true
+      providerSource: environment
+      options: [snyk]
+    - id: code-quality
+      displayName: Code quality analysis
+      description: Static quality scan (bugs, code smells) required by the validation checklists.
+      contract: ways.dev/code-quality@1
+      required: true
+      providerSource: environment
+      options: [sonarqube]
 
   defaults:
     bindings:

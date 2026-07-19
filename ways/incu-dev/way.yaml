@@ -5,7 +5,7 @@ kind: Way
 metadata:
   name: incu/dev
   displayName: Incu Development
-  version: 1.1.0
+  version: 1.2.0
   description: Incu's gated feature-development flow (discovery → PRD → plan → build → scans → PRs).
   discipline: development
   publisher: incu
@@ -13,6 +13,7 @@ metadata:
 spec:
   skills:
     - path: ../../skills/incu-way-development
+      uses: [vcs-host, sast, sca, code-quality]
 
   knowledge:
     - id: dev-conventions
@@ -38,11 +39,37 @@ spec:
         required: true
         capability: vcs-host
 
-  capabilitySlots:
-    - { id: vcs-host, contract: ways.dev/vcs-host@1, required: true, providerSource: environment, options: [github, gitlab, bitbucket] }
-    - { id: sast, contract: ways.dev/sast@1, required: true, providerSource: environment, options: [snyk, semgrep] }
-    - { id: sca, contract: ways.dev/sca@1, required: true, providerSource: environment, options: [snyk] }
-    - { id: code-quality, contract: ways.dev/code-quality@1, required: true, providerSource: environment, options: [sonarqube] }
+  # Slice 10: slots derive from skills[].uses; these entries ENRICH the derived slots
+  # (display metadata + suggested impls). `capabilitySlots` is the deprecated alias of `needs`.
+  needs:
+    - id: vcs-host
+      displayName: Version-control host
+      description: Hosts the repo and PRs — where this way opens and gates pull requests.
+      contract: ways.dev/vcs-host@1
+      required: true
+      providerSource: environment
+      options: [github, gitlab, bitbucket]
+    - id: sast
+      displayName: Static application security testing
+      description: Scans first-party code for vulnerabilities in the validation phase.
+      contract: ways.dev/sast@1
+      required: true
+      providerSource: environment
+      options: [snyk, semgrep]
+    - id: sca
+      displayName: Software composition analysis
+      description: Scans dependencies for known vulnerabilities in the validation phase.
+      contract: ways.dev/sca@1
+      required: true
+      providerSource: environment
+      options: [snyk]
+    - id: code-quality
+      displayName: Code quality analysis
+      description: Static quality scan (bugs, code smells) required by the validation checklist.
+      contract: ways.dev/code-quality@1
+      required: true
+      providerSource: environment
+      options: [sonarqube]
 
   defaults:
     bindings:
