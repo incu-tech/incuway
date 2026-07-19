@@ -1,10 +1,10 @@
 # incuway
 
-Workflow skills and templates for Claude Code, created and maintained by [Incu](https://incu.tech).
+Workflow skills and templates for AI coding agents, created and maintained by [Incu](https://incu.tech).
 
 ## What this is
 
-`incuway` is a set of **structured skills** that define how Claude Code should approach software development: new features, bug fixing, and security remediation. Each skill implements a flow with explicit approval gates — Claude does not advance to the next phase without the user's confirmation.
+`incuway` is a set of **structured skills** that define how an AI coding agent (Claude Code, Cursor, Windsurf, etc.) should approach software development: new features, bug fixing, and security remediation. Each skill implements a flow with explicit approval gates — the agent does not advance to the next phase without the user's confirmation.
 
 ## Installation
 
