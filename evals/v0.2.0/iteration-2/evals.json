@@ -1,0 +1,41 @@
+{
+  "skill_name": "incuway-skill-suite-deeper",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Multi-turn development workflow eval. Simulate a realistic feature request where the assistant should gather enough discovery context, then produce a PRD gate artifact without skipping straight to implementation. User turn 1: 'A client wants scheduled exports for contacts so their ops team gets a CSV by email every Monday. They also mentioned maybe letting users choose fields later, but that's not firm yet. Can you take this through the process?' User turn 2, after the assistant asks clarifying questions: 'For now this is admin-only, CSV only, current list filters should apply, archived contacts should stay excluded, and we do need an audit trail. Large exports can be async later, not in v1.'",
+      "expected_output": "A strong run should produce a discovery summary plus a PRD draft/gate response that reflects the clarified constraints, keeps non-firm ideas out of scope, and stops for review.",
+      "files": [],
+      "expectations": [
+        "The run captures both discovery dimensions: client/product constraints and likely codebase impact.",
+        "The produced PRD draft keeps 'field chooser later' as out of scope or open question rather than silently including it.",
+        "The output includes an explicit gate-style stop for PRD review before planning or coding.",
+        "The run does not jump to implementation tasks or code changes."
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Multi-turn bug workflow eval. Simulate a realistic regression report where the assistant should do intake, analysis framing, and fix-plan gating without jumping prematurely. User turn 1: 'After the last release, some customers see duplicate reminder emails for overdue invoices. We only noticed it in production. Can you fix it?' User turn 2, after the assistant asks clarifying questions: 'It seems to happen when an invoice is edited and then the reminder job runs. We have two customer examples, it started right after release 2026.05.22, and support says only invoices with payment terms changed were affected.'",
+      "expected_output": "A strong run should produce BUG/ANALYSIS/FIX_PLAN-style outputs or equivalents, preserve uncertainty where needed, require a reproduction test before the fix, and stop at the fix-plan gate rather than implementing the fix.",
+      "files": [],
+      "expectations": [
+        "The run turns the report into a structured bug workflow rather than a direct fix attempt.",
+        "The analysis output separates observed behavior, suspected causes, and evidence instead of presenting one guess as fact.",
+        "The workflow explicitly requires a failing reproduction test before fix implementation.",
+        "The run ends at a fix-plan approval gate instead of applying the fix."
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Multi-turn Snyk remediation workflow eval. Simulate a security request where the assistant should intake context, structure findings, and stop at the right approval point. User turn 1: 'We need to clean up Snyk issues before an enterprise security review next week. Can you run the process?' User turn 2, after the assistant asks for context: 'Use `/repo/app` as the project path. Security mainly cares about critical and high issues for this review, but if a medium is trivial to fix we can include it. We want full remediation planning, not just a report.' User turn 3, after the assistant would normally scan and present findings: 'Let's scope this pass to critical and high only.'",
+      "expected_output": "A strong run should reflect intake context, findings scoping, and a remediation plan approval gate. It should not jump from vague request to remediation without scan evidence and user scope confirmation.",
+      "files": [],
+      "expectations": [
+        "The run captures scan intake context including path, urgency, and remediation-vs-review intent.",
+        "The workflow makes user scope confirmation depend on findings evidence rather than assuming all findings are in scope.",
+        "The remediation plan output is specific to in-scope findings and preserves the approval gate before fixes.",
+        "The run does not skip directly from request to fix implementation."
+      ]
+    }
+  ]
+}

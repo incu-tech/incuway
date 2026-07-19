@@ -1,0 +1,41 @@
+{
+  "skill_name": "incuway-skill-suite",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "A client asked us to add a bulk contact export feature to the admin panel. They want CSV and maybe XLSX, but they were vague about filters, permissions, and whether archived contacts should be included. Please handle this request end to end.",
+      "expected_output": "The first response should trigger the development workflow, emphasize discovery and intake, avoid inventing requirements, and avoid jumping into implementation.",
+      "files": [],
+      "expectations": [
+        "The response frames the request as feature or product-change work that needs structured discovery before implementation.",
+        "The response asks for or lists missing client-facing details such as scope, permissions, acceptance criteria, or stakeholder expectations.",
+        "The response asks for or commits to codebase discovery before drafting requirements or implementation artifacts.",
+        "The response does not invent a final scope or begin coding immediately."
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Something broke after last week's release. In production, some users say invoice totals are showing as zero after editing line items. I don't yet know if it's frontend, backend, or data. Please fix it.",
+      "expected_output": "The first response should trigger the bug workflow, clarify the issue intake, avoid guessing root cause, and avoid proposing a fix before analysis.",
+      "files": [],
+      "expectations": [
+        "The response frames the request as a bug or regression that needs structured intake and analysis.",
+        "The response calls out missing details such as expected behavior, affected users, environment, or reproduction information.",
+        "The response avoids assuming a root cause or fix direction before analysis and reproduction.",
+        "The response indicates that reproduction and evidence should come before fix implementation."
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Security asked me to clean up our Snyk findings before the next customer audit. I only know there are a mix of dependency issues and code issues, and I'm not sure whether they want all of them fixed or just the serious ones. Please take care of it.",
+      "expected_output": "The first response should trigger the Snyk remediation workflow, confirm intake context and scope expectations, and avoid assuming remediation scope from the prompt alone.",
+      "files": [],
+      "expectations": [
+        "The response frames the request as Snyk review, triage, or remediation work rather than generic bug fixing.",
+        "The response asks for or identifies intake context such as project path, audit urgency, scan target, or whether the goal is review, triage, or remediation.",
+        "The response avoids assuming that every finding should be fixed and instead defers scope selection until findings are available.",
+        "The response indicates that scan evidence should precede the remediation plan."
+      ]
+    }
+  ]
+}

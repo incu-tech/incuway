@@ -1,0 +1,11 @@
+.DS_Store
+skill-evals-workspace/
+.worktrees/
+
+.ways/cache
+.agents
+.claude
+
+# Internal working docs — never published
+docs/integrations/
+docs/proposals/

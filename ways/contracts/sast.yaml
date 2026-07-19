@@ -1,0 +1,10 @@
+apiVersion: ways/v1alpha1
+kind: SlotContract
+metadata:
+  name: ways.dev/sast
+  version: 1.0.0
+  description: Static application security testing (source code) capability.
+spec:
+  operations:
+    - { name: scan-code, description: Run a static analysis scan over source code. }
+    - { name: list-findings, description: List security findings with severity. }

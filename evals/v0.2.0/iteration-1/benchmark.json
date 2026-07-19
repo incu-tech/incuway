@@ -1,0 +1,35 @@
+{
+  "metadata": {
+    "skill_name": "incuway-skill-suite",
+    "skill_path": "/Users/alvaro/Downloads/work/incuway/skills",
+    "executor_model": "github-copilot/gpt-5.4",
+    "analyzer_model": "github-copilot/gpt-5.4",
+    "timestamp": "2026-05-25T00:00:00Z",
+    "evals_run": [1, 2, 3],
+    "runs_per_configuration": 1
+  },
+  "run_summary": {
+    "with_skill": {
+      "pass_rate": {"mean": 1.0, "stddev": 0.0, "min": 1.0, "max": 1.0},
+      "time_seconds": {"mean": 1.0, "stddev": 0.0, "min": 1.0, "max": 1.0},
+      "tokens": {"mean": 1185.0, "stddev": 411.43, "min": 747.0, "max": 1567.0}
+    },
+    "without_skill": {
+      "pass_rate": {"mean": 0.5, "stddev": 0.0, "min": 0.5, "max": 0.5},
+      "time_seconds": {"mean": 1.0, "stddev": 0.0, "min": 1.0, "max": 1.0},
+      "tokens": {"mean": 655.67, "stddev": 414.88, "min": 356.0, "max": 1135.0}
+    },
+    "delta": {
+      "pass_rate": "+0.50",
+      "time_seconds": "+0.0",
+      "tokens": "+529"
+    }
+  },
+  "notes": [
+    "All three with-skill runs passed every assertion, while all three without-skill runs missed exactly the new behavior the edits were targeting: early codebase/context intake or anti-guessing discipline.",
+    "The development baseline still performed reasonably on client-facing clarification, but it failed on codebase discovery and proposed a default v1 scope too early.",
+    "The bug baseline centered investigation quickly, but it skipped the stronger intake step and narrowed the likely failure path before grounding expected behavior and reproduction details.",
+    "The Snyk baseline recognized the security context, but it asked for severity scope before gathering project-path and scan-intake context, which is exactly the workflow gap the rewrite was meant to close.",
+    "The skill suite adds response length and specificity rather than execution time in this eval format; the higher token count appears to buy more disciplined intake, not redundant filler."
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "metadata": {
+    "skill_name": "incuway-skill-suite-deeper",
+    "skill_path": "/Users/alvaro/Downloads/work/incuway/skills",
+    "executor_model": "github-copilot/gpt-5.4",
+    "analyzer_model": "github-copilot/gpt-5.4",
+    "timestamp": "2026-05-25T00:00:00Z",
+    "evals_run": [1, 2, 3],
+    "runs_per_configuration": 1
+  },
+  "run_summary": {
+    "with_skill": {
+      "pass_rate": {"mean": 1.0, "stddev": 0.0, "min": 1.0, "max": 1.0},
+      "time_seconds": {"mean": 1.0, "stddev": 0.0, "min": 1.0, "max": 1.0},
+      "tokens": {"mean": 4841.33, "stddev": 785.72, "min": 4386.0, "max": 5745.0}
+    },
+    "without_skill": {
+      "pass_rate": {"mean": 0.75, "stddev": 0.25, "min": 0.5, "max": 1.0},
+      "time_seconds": {"mean": 1.0, "stddev": 0.0, "min": 1.0, "max": 1.0},
+      "tokens": {"mean": 5909.0, "stddev": 1286.39, "min": 4793.0, "max": 7095.0}
+    },
+    "delta": {
+      "pass_rate": "+0.25",
+      "time_seconds": "+0.0",
+      "tokens": "-1068"
+    }
+  },
+  "notes": [
+    "The deeper evals show a more nuanced result than iteration 1: the skills still improve discipline, but strong baseline behavior can sometimes approximate the intended workflow on artifact-heavy tasks.",
+    "The development PRD eval remained clearly discriminating: the skill-guided run was more discovery-grounded and held the PRD gate more cleanly, while the baseline drifted toward implementation planning.",
+    "The bug fix-plan eval was not very discriminating. Both runs produced strong staged artifacts and stopped correctly, which suggests the scenario or assertions need tightening if we want to isolate unique value from the bug skill.",
+    "The Snyk eval still differentiated usefully, but only on intake-context rigor and canonical scoping behavior; a competent baseline can also produce decent findings and planning artifacts once the scenario is staged for it.",
+    "Compared with iteration 1, this round better reflects real-world quality: the edits clearly help, but the measurable edge is strongest in ambiguous early workflow behavior, not necessarily in every artifact-writing scenario."
+  ]
+}

@@ -1,0 +1,20 @@
+apiVersion: ways/v1alpha1
+kind: Binding
+metadata:
+  name: snyk
+  version: 1.0.0
+  description: Satisfy the sca slot with Snyk Open Source (snyk_sca_scan).
+spec:
+  contract: ways.dev/sca@1
+  impl: snyk
+  coversOperations: [scan-dependencies, list-findings]
+  requires:
+    cli:
+      - name: snyk
+        check: snyk auth
+        install: 'npm i -g snyk  (https://docs.snyk.io)'
+        required: true
+    env:
+      - name: SNYK_TOKEN
+        required: true
+        secret: true

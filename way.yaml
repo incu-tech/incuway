@@ -1,0 +1,114 @@
+# incu/incuway — the installable manifest for the whole incuway family (ways/v1alpha1).
+#
+# THIS file is what `ways.sh add github:incu-tech/incu-way` consumes: the CLI clones the repo,
+# requires a `way.yaml` at the root, and installs the bundled skills (via skills.sh) and rules
+# (via steering). Bundled paths are relative to this repo root and must not escape it (no `..`),
+# so this manifest — not the per-flow manifests under `ways/` — is the installable one.
+# The per-flow manifests (`ways/incu-dev`, `ways/incu-bugs`) remain the canonical per-way
+# descriptions; this root way packages the family in one install.
+#
+# Validate:  ways.sh validate way.yaml
+#            ways.sh conformance way.yaml
+# Install:   ways.sh add github:incu-tech/incu-way     (or: ways.sh add /path/to/incu-way)
+apiVersion: ways/v1alpha1
+kind: Way
+metadata:
+  name: incu/incu-way
+  displayName: Incuway
+  version: 1.2.0
+  description: The incuway family — gated development, bug-fixing, security remediation, onboarding, docs, assessment, and ticket-refinement flows, installed as one way.
+  discipline: development
+  publisher: incu
+  homepage: https://github.com/incu-tech/incu-way
+  keywords: [incu, workflow, gates, development, bugs, security]
+
+spec:
+  # All bundled: paths are relative to this repo root and exist in the bundle.
+  skills:
+    - { id: init, path: skills/incu-way-init }
+    - { id: docs, path: skills/incu-way-docs }
+    - { id: arch-assessment, path: skills/incu-way-arch-assessment }
+    - { id: security-validation, path: skills/incu-way-security-validation }
+    - { id: threat-model, path: skills/incu-way-threat-model }
+    - { id: po, path: skills/incu-way-po }
+    - { id: development, path: skills/incu-way-development }
+    - { id: bugs, path: skills/incu-way-bugs }
+    - { id: snyk-remediation, path: skills/snyk-remediation }
+    # The only skill that runs git add/commit/push or `gh pr create` — every flow defers
+    # persistence to it, so an install without it dead-ends at every checkpoint.
+    - { id: prepare-pr, path: skills/incu-way-prepare-pr }
+
+  # Knowledge/rules placed into the target project on `ways add` (steering).
+  # Bundled as `file:` (works today: staged + placed with applicability frontmatter).
+  # The bare `pack:` form needs the registry to resolve (Slice 6); promote these to
+  # `pack: { name, source, versionConstraint }` once the packs are published externally.
+  knowledge:
+    # THE canonical state contract — how the gated flows read/write .ways/state.json.
+    # Always-on so it is in context whenever a flow runs; this is why an installed skill
+    # replaces the old board-specific STATE.md doc (which did not travel with `ways add`).
+    - id: state-contract
+      description: Canonical .ways/state.json contract (ways/v1alpha1) — envelope, enums, lifecycle, read/write points.
+      applicability: { mode: always }
+      file: ways/rulepacks/state-contract/rules/state-contract.md
+    # Incu baseline conventions, shared across incu ways (from the incu-base rulepack).
+    - id: security
+      description: Security-by-default conventions.
+      applicability: { mode: always }
+      file: ways/rulepacks/incu-base/rules/security.md
+    - id: branch-flow
+      description: Uniform PR-only branch flow.
+      applicability: { mode: always }
+      file: ways/rulepacks/incu-base/rules/branch-flow.md
+
+  requires:
+    cli:
+      - name: git
+        check: git --version
+        required: true
+      - name: gh
+        check: gh --version
+        versionConstraint: '>=2.0.0'
+        install: 'brew install gh  (https://cli.github.com)'
+        required: true
+        capability: vcs-host
+
+  capabilitySlots:
+    - { id: vcs-host, contract: ways.dev/vcs-host@1, required: true, providerSource: environment, options: [github, gitlab, bitbucket] }
+    - { id: sast, contract: ways.dev/sast@1, required: true, providerSource: environment, options: [snyk, semgrep] }
+    - { id: sca, contract: ways.dev/sca@1, required: true, providerSource: environment, options: [snyk] }
+    - { id: code-quality, contract: ways.dev/code-quality@1, required: true, providerSource: environment, options: [sonarqube] }
+
+  defaults:
+    bindings:
+      vcs-host: github
+      sast: snyk
+      sca: snyk
+      code-quality: sonarqube
+
+  # The family's canonical delivery flow (the development way — mirrors ways/incu-dev/way.yaml).
+  # The bug/security flows keep their own phase models inside their skills; they share this
+  # state contract (one .ways/state.json per worktree/branch, ways/v1alpha1, spec in ways/rulepacks/state-contract/rules/state-contract.md).
+  flow:
+    phases:
+      - { id: discovery, label: Discovery & intake }
+      - { id: prd, label: PRD }
+      - { id: plan, label: Implementation plan }
+      - { id: implementation, label: Implementation }
+      - { id: validation, label: Validation & scans }
+      - { id: review, label: Review & PRs }
+    gates:
+      - { id: prd, label: PRD review, afterPhase: prd, approval: user, enforcement: blocking }
+      - { id: plan, label: Plan review, afterPhase: plan, approval: user, enforcement: blocking }
+      - { id: testing, label: User testing, afterPhase: validation, approval: user, enforcement: blocking }
+      - { id: pr-develop, label: PR feat→develop, afterPhase: review, approval: user, enforcement: blocking }
+      - { id: pr-main, label: PR develop→main, afterPhase: review, approval: user, enforcement: blocking }
+    generates:
+      - { name: PRD.md, pathTemplate: 'docs/prds/{slug}/PRD.md', producedInPhase: prd, gate: prd, statusField: Status, required: true }
+      - { name: PLAN.md, pathTemplate: 'docs/prds/{slug}/PLAN.md', producedInPhase: plan, gate: plan, statusField: Status, required: true }
+      - { name: TESTING.md, pathTemplate: 'docs/prds/{slug}/TESTING.md', producedInPhase: validation, gate: testing }
+    state: .ways/state.json
+
+  # Bundled inside the init skill so it travels with `ways add` (ways does not place
+  # `templates:` yet — Slice-6+; skills travel wholesale, so init can copy it at runtime).
+  templates:
+    - skills/incu-way-init/claude.template.md

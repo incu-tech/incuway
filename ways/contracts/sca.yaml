@@ -1,0 +1,10 @@
+apiVersion: ways/v1alpha1
+kind: SlotContract
+metadata:
+  name: ways.dev/sca
+  version: 1.0.0
+  description: Software composition analysis (dependency vulnerabilities) capability.
+spec:
+  operations:
+    - { name: scan-dependencies, description: Scan dependencies for known vulnerabilities. }
+    - { name: list-findings, description: List vulnerable dependencies with severity. }

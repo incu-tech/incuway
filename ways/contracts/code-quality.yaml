@@ -1,0 +1,10 @@
+apiVersion: ways/v1alpha1
+kind: SlotContract
+metadata:
+  name: ways.dev/code-quality
+  version: 1.0.0
+  description: Static code-quality analysis (bugs, smells, coverage gates) capability.
+spec:
+  operations:
+    - { name: analyze, description: Run a code-quality analysis. }
+    - { name: list-issues, description: List quality issues by severity. }

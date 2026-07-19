@@ -1,0 +1,7 @@
+[
+  "All three with-skill runs passed every assertion, while all three without-skill runs missed exactly the new behavior the edits were targeting: early codebase/context intake or anti-guessing discipline.",
+  "The development baseline still performed reasonably on client-facing clarification, but it failed on codebase discovery and proposed a default v1 scope too early.",
+  "The bug baseline centered investigation quickly, but it skipped the stronger intake step and narrowed the likely failure path before grounding expected behavior and reproduction details.",
+  "The Snyk baseline recognized the security context, but it asked for severity scope before gathering project-path and scan-intake context, which is exactly the workflow gap the rewrite was meant to close.",
+  "The skill suite adds response length and specificity rather than execution time in this eval format; the higher token count appears to buy more disciplined intake, not redundant filler."
+]

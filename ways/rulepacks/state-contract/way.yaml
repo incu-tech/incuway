@@ -1,0 +1,18 @@
+apiVersion: ways/v1alpha1
+kind: RulePack
+metadata:
+  name: incu/state-contract
+  displayName: Ways State Contract
+  version: 1.0.0
+  # Implements the ways/v1alpha1 state standard (schemas/ways/v1alpha1/state.schema.json +
+  # docs/standards/state-files.md). Lives here for now; ways is the intended long-term owner —
+  # promote to a ways-published pack and switch consumers from `file:` to `pack: { source }`.
+  description: Canonical .ways/state.json contract (ways/v1alpha1) — how gated flows read and write state. Placed as an always-on rule so any installed flow knows how to generate/resume state.
+  discipline: development
+  publisher: incu
+spec:
+  knowledge:
+    - id: state-contract
+      description: The .ways/state.json envelope, enums, lifecycle, and read/write points (ways/v1alpha1, schemaVersion 2).
+      applicability: { mode: always }
+      file: rules/state-contract.md

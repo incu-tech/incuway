@@ -1,0 +1,11 @@
+apiVersion: ways/v1alpha1
+kind: SlotContract
+metadata:
+  name: ways.dev/vcs-host
+  version: 1.0.0
+  description: Source-control host capability — open PRs, read repo, pin refs.
+spec:
+  operations:
+    - { name: read-repo, description: Read repository metadata and contents. }
+    - { name: open-pr, description: Open a pull/merge request. }
+    - { name: pin-ref, description: Resolve and pin a branch/tag to a commit SHA. }

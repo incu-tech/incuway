@@ -1,0 +1,7 @@
+[
+  "The deeper evals show a more nuanced result than iteration 1: the skills still improve discipline, but strong baseline behavior can sometimes approximate the intended workflow on artifact-heavy tasks.",
+  "The development PRD eval remained clearly discriminating: the skill-guided run was more discovery-grounded and held the PRD gate more cleanly, while the baseline drifted toward implementation planning.",
+  "The bug fix-plan eval was not very discriminating. Both runs produced strong staged artifacts and stopped correctly, which suggests the scenario or assertions need tightening if we want to isolate unique value from the bug skill.",
+  "The Snyk eval still differentiated usefully, but only on intake-context rigor and canonical scoping behavior; a competent baseline can also produce decent findings and planning artifacts once the scenario is staged for it.",
+  "Compared with iteration 1, this round better reflects real-world quality: the edits clearly help, but the measurable edge is strongest in ambiguous early workflow behavior, not necessarily in every artifact-writing scenario."
+]

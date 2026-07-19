@@ -1,0 +1,72 @@
+# The real Incu feature-development way (incu-way-development), described as ways/v1alpha1.
+# Validate:  ways.sh validate ways/incu-dev/way.yaml      (run from repo root → see README)
+apiVersion: ways/v1alpha1
+kind: Way
+metadata:
+  name: incu/dev
+  displayName: Incu Development
+  version: 1.1.0
+  description: Incu's gated feature-development flow (discovery → PRD → plan → build → scans → PRs).
+  discipline: development
+  publisher: incu
+
+spec:
+  skills:
+    - path: ../../skills/incu-way-development
+
+  knowledge:
+    - id: dev-conventions
+      description: Way-specific dev conventions.
+      applicability: { mode: always }
+      file: rules/conventions.md
+    - id: base
+      description: Incu baseline conventions.
+      applicability: { mode: always }
+      pack:
+        name: incu/base-conventions
+        versionConstraint: ^1.0.0
+
+  requires:
+    cli:
+      - name: git
+        check: git --version
+        required: true
+      - name: gh
+        check: gh --version
+        versionConstraint: '>=2.0.0'
+        install: 'brew install gh  (https://cli.github.com)'
+        required: true
+        capability: vcs-host
+
+  capabilitySlots:
+    - { id: vcs-host, contract: ways.dev/vcs-host@1, required: true, providerSource: environment, options: [github, gitlab, bitbucket] }
+    - { id: sast, contract: ways.dev/sast@1, required: true, providerSource: environment, options: [snyk, semgrep] }
+    - { id: sca, contract: ways.dev/sca@1, required: true, providerSource: environment, options: [snyk] }
+    - { id: code-quality, contract: ways.dev/code-quality@1, required: true, providerSource: environment, options: [sonarqube] }
+
+  defaults:
+    bindings:
+      vcs-host: github
+      sast: snyk
+      sca: snyk
+      code-quality: sonarqube
+
+  flow:
+    phases:
+      - { id: discovery, label: Discovery & intake }
+      - { id: prd, label: PRD }
+      - { id: plan, label: Implementation plan }
+      - { id: implementation, label: Implementation }
+      - { id: validation, label: Validation & scans }
+      - { id: review, label: Review & PRs }
+    gates:
+      - { id: prd, label: PRD review, afterPhase: prd, approval: user, enforcement: blocking }
+      - { id: plan, label: Plan review, afterPhase: plan, approval: user, enforcement: blocking }
+      - { id: testing, label: User testing, afterPhase: validation, approval: user, enforcement: blocking }
+      - { id: pr-develop, label: PR feat→develop, afterPhase: review, approval: user, enforcement: blocking }
+      - { id: pr-main, label: PR develop→main, afterPhase: review, approval: user, enforcement: blocking }
+    generates:
+      - { name: PRD.md, pathTemplate: 'docs/prds/{slug}/PRD.md', producedInPhase: prd, gate: prd, statusField: Status, required: true }
+      - { name: PLAN.md, pathTemplate: 'docs/prds/{slug}/PLAN.md', producedInPhase: plan, gate: plan, statusField: Status, required: true }
+      - { name: TESTING.md, pathTemplate: 'docs/prds/{slug}/TESTING.md', producedInPhase: validation, gate: testing }
+    state: .ways/state.json

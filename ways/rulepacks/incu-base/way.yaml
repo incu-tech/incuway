@@ -1,0 +1,17 @@
+apiVersion: ways/v1alpha1
+kind: RulePack
+metadata:
+  name: incu/base-conventions
+  version: 1.0.0
+  description: Incu's baseline conventions (security-by-default, branch flow) shared across Incu ways.
+  publisher: incu
+spec:
+  knowledge:
+    - id: security
+      description: Security-by-default conventions.
+      applicability: { mode: always }
+      file: rules/security.md
+    - id: branch-flow
+      description: Uniform PR-only branch flow.
+      applicability: { mode: always }
+      file: rules/branch-flow.md
