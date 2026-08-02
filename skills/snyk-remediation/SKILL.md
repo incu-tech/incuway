@@ -1,7 +1,12 @@
 ---
 name: snyk-remediation
 version: 0.1.0
-description: Use for Snyk-driven security work: run Snyk SAST/SCA scans, review findings, triage scope, or produce an approved remediation plan before fixing vulnerabilities. Trigger only when the user mentions Snyk, scanner findings, dependency/source vulnerabilities from Snyk, or remediation of Snyk results. Do not trigger for general security architecture reviews, threat models, manual OWASP validation, or non-Snyk bug fixes.
+description: >-
+  Use for Snyk-driven security work: run Snyk SAST/SCA scans, review findings, triage scope, or
+  produce an approved remediation plan before fixing vulnerabilities. Trigger only when the user
+  mentions Snyk, scanner findings, dependency/source vulnerabilities from Snyk, or remediation of
+  Snyk results. Do not trigger for general security architecture reviews, threat models, manual
+  OWASP validation, or non-Snyk bug fixes.
 ---
 
 # Snyk Remediation Process
@@ -139,7 +144,7 @@ Follow the **ways/v1alpha1 state contract** — the canonical `.ways/state.json`
 
 Flow-specific values:
 - `flow`: `security`
-- `way`: `incu/incu-way` · `discipline`: `security` (optionally `wayVersion` from the way manifest)
+- `way`: `incu/security` · `discipline`: `security` (optionally `wayVersion` from the way manifest)
 - Branch pattern: `fix/security-{slug}`
 - Initial `phase`: `findings`
 - `isolationType`: `branch` or `worktree`, from the isolation choice

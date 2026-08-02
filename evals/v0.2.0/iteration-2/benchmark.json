@@ -1,7 +1,7 @@
 {
   "metadata": {
     "skill_name": "incuway-skill-suite-deeper",
-    "skill_path": "/Users/alvaro/Downloads/work/incuway/skills",
+    "skill_path": "<local-checkout>/incuway/skills",
     "executor_model": "github-copilot/gpt-5.4",
     "analyzer_model": "github-copilot/gpt-5.4",
     "timestamp": "2026-05-25T00:00:00Z",

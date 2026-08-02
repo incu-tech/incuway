@@ -36,9 +36,10 @@ See `README.md` for the full project context.
       SKILL.md                     # Snyk security remediation flow (Phase 0–6, 5 gates)
     incu-way-prepare-pr/
       SKILL.md                     # User-invoked commit/push/PR skill — the only skill that touches git persistence
-  way.yaml                         # Installable Way manifest (ways/v1alpha1) — skills + knowledge + requires
+  way.yaml                         # Installable WayFamily manifest (ways/v1alpha1) — members + shared skills/knowledge/slots
   ways/
-    incu-dev/, incu-bugs/          # Per-flow Way manifests (canonical per-way definitions)
+    incu-dev/, incu-bugs/,         # The three member Ways (one gated work-item flow each,
+    incu-security/                 # referenced by way.yaml spec.members)
     rulepacks/
       state-contract/              # Canonical .ways/state.json contract, placed as an always-on rule on `ways add`
       incu-base/                   # Baseline conventions (security, branch-flow)
@@ -50,6 +51,34 @@ See `README.md` for the full project context.
     no-auto-commit.sh              # Eval guarding that no flow commits/pushes/opens PRs itself
     v0.2.0/                        # Behavior eval suite (task/rubric style)
 ```
+
+## Ways artifacts: the family and its members
+
+The root `way.yaml` is a **`kind: WayFamily`** (`incu/incu-way`) — it declares no `flow` of its own
+(that is a schema error on a family). It *references* three **member Ways**, one per gated
+work-item flow, and carries the payload shared across them:
+
+| Member id | Manifest | Way | Flow | Driven by |
+|---|---|---|---|---|
+| `dev` | `ways/incu-dev/way.yaml` | `incu/dev` | feature — 8 phases, 5 gates | `skills/incu-way-development` |
+| `bugs` | `ways/incu-bugs/way.yaml` | `incu/bugs` | bug — 9 phases, 2 gates | `skills/incu-way-bugs` |
+| `security` | `ways/incu-security/way.yaml` | `incu/security` | security — 8 phases, 5 gates | `skills/snyk-remediation` |
+
+Rules to keep this coherent when editing:
+
+- **Members are the flows that keep state.** The analytical/bootstrap flows (init, docs, po,
+  arch-assessment, security-validation, threat-model) and `prepare-pr` are **shared skills** of the
+  family, not members — they produce a document under `docs/` and keep no `state.json`.
+- **Member phase ids match the state contract enums** (`feature` / `bug` / `security` in
+  `ways/rulepacks/state-contract/rules/state-contract.md`). Change one, change the other.
+- **Skills are declared at the family level, never inside a member.** A member is installed from its
+  own directory, so a `path: ../../skills/…` would escape the bundle and fail the install.
+- **Shared payload lives only in the family** (state-contract, security, branch-flow rules; the four
+  capability slots and their default bindings). A member declares only what is specific to it (e.g.
+  `ways/incu-dev/rules/conventions.md`) plus its own `needs` — the effective slot set is the union.
+- After any change: `ways validate` + `ways conformance` on the family and every member (see
+  `ways/README.md`). The family check re-runs full Way conformance on each bundled member, so a
+  broken member drops the family to `schema-valid`.
 
 ## State tracking: `.ways/state.json`
 
@@ -88,7 +117,7 @@ Full life cycle for new features. Explicit gates at each phase prevent Claude fr
 Life cycle for reported or discovered bugs. The only critical gate is the FIX_PLAN before writing any fix code. Flow: orientation → branch or worktree choice → BUG.md → ANALYSIS.md → reproduction test (that fails) → FIX_PLAN (gate) → fix → validation + scans → PR.
 
 ### `snyk-remediation`
-Complete process for scanning and remediating SAST + SCA vulnerabilities. Flow: scan → findings table (gate 1: user chooses scope) → branch or worktree choice → FINDINGS.md → PLAN.md (gate 2) → fix per finding → re-scan → RESOLUTION.md (gate 3) → PR fix→develop (gate 4) → PR develop→main (gate 5).
+Complete process for scanning and remediating SAST + SCA vulnerabilities. Flow: scan → findings table (gate 1: user chooses scope) → branch or worktree choice → FINDINGS.md → PLAN.md (gate 2) → fix per finding → re-scan → RESOLUTION.md (gate 3) → PR fix→develop (gate 4) → PR develop→main (gate 5). Drives the `incu/security` member way (`ways/incu-security/way.yaml`), which is the `way` value its `state.json` records.
 
 ### `incu-way-prepare-pr`
 The only skill that runs `git add`, `git commit`, `git push`, or `gh pr create`. Every other skill only writes files and *suggests* invoking this one at checkpoints and before opening a PR — none of them call it automatically or run those git commands themselves. It only runs when the **user** explicitly asks for it (by name, or "commit this", "push this", "prepare the PR"). Operates on whatever the caller's current item is (reads `.ways/state.json` if present) but keeps no state file of its own.
@@ -114,8 +143,14 @@ Template for the `CLAUDE.md` of new projects, bundled inside `incu-way-init` so 
 4. For version bumps, edit `VERSION`, run `bash evals/versioning.sh --fix` to sync every skill frontmatter, then `bash evals/versioning.sh` to verify.
 5. Run `./evals/isolation-choice.sh` if the change touches isolation, branch, or worktree; run `./evals/no-auto-commit.sh` if it touches committing, pushing, or PR creation.
 6. Update or add tasks in `evals/v0.2.0/` when the change affects observable agent behavior.
-7. Update this CLAUDE.md if the new skill is part of the mandatory set.
-8. Open a PR `feat/{slug}` → `main` (this repo has no `develop` branch).
+7. Declare the skill in the root `way.yaml` under `spec.skills` (with its `uses` slot ids) — that is
+   what places it on `ways add`. A skill that is **not** listed there never installs.
+8. If the skill is a new **gated work-item flow** (it keeps a `.ways/state.json`), also add a member
+   Way: `ways/{name}/way.yaml` (`kind: Way`, its own phases/gates/generates/`state`) plus an entry in
+   the family's `spec.members`. Then re-run `ways validate` + `ways conformance` on the family and
+   the new member. Keep its phase ids aligned with the state contract enums.
+9. Update this CLAUDE.md if the new skill is part of the mandatory set.
+10. Open a PR `feat/{slug}` → `main` (this repo has no `develop` branch).
 
 ## Security
 

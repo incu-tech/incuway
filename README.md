@@ -9,7 +9,7 @@ Workflow skills and templates for AI coding agents, created and maintained by [I
 ## Installation
 
 ```bash
-npx skills add https://github.com/incu-tech/incu-way.git
+npx skills add https://github.com/incu-tech/incuway.git
 ```
 
 This installs all available skills in the detected agent (Claude Code, Cursor, Windsurf, etc.) at the global or project level, depending on what you choose in the interactive prompt.
@@ -17,24 +17,32 @@ This installs all available skills in the detected agent (Claude Code, Cursor, W
 For non-interactive environments like Codex/Conductor, use:
 
 ```bash
-npx skills add https://github.com/incu-tech/incu-way.git --yes
+npx skills add https://github.com/incu-tech/incuway.git --yes
 ```
 
 ### Install a specific skill
 
 ```bash
-npx skills add https://github.com/incu-tech/incu-way.git --skill incu-way-development
+npx skills add https://github.com/incu-tech/incuway.git --skill incu-way-development
 ```
 
-### Install as a Way
+### Install as a way family
 
-The repo is also an installable **Way** (`way.yaml`, `ways/v1alpha1`): skills plus the
-always-on knowledge rules (state contract, security and branch-flow conventions) in one
-package.
+The repo is also an installable **WayFamily** (`way.yaml`, `ways/v1alpha1`): the three gated
+work-item flows as **member ways** — `incu/dev` (feature), `incu/bugs` (bug), `incu/security`
+(security remediation), each with its own phases and gates — plus the payload they share: the
+other skills, the always-on knowledge rules (state contract, security and branch-flow
+conventions), and the capability slots with their default bindings.
 
 ```bash
-ways.sh add github:incu-tech/incu-way
+npm install -g @incu/ways                               # the ways CLI (v0.3.0+)
+
+ways add github:incu-tech/incuway                       # the whole family
+ways add github:incu-tech/incuway --members dev,bugs    # just the flows you want
 ```
+
+One plan, one approval; `ways.yaml` + `ways.lock` record the family and the members you
+installed. See [`ways/README.md`](./ways/README.md) for the artifacts and how to validate them.
 
 ## Included skills
 
@@ -64,8 +72,8 @@ Three version numbers coexist on purpose:
   from. To bump it: edit `VERSION`, run `bash evals/versioning.sh --fix` to sync the
   frontmatters, then `bash evals/versioning.sh` to verify.
 - **Ways artifacts** (`way.yaml` and `ways/**/way.yaml`) keep their own
-  `metadata.version`; update those only when the corresponding Way, RulePack, Contract,
-  or Binding changes.
+  `metadata.version` — the family and each member way version independently; update those
+  only when the corresponding WayFamily, Way, RulePack, Contract, or Binding changes.
 - **The behavior eval suite** (`evals/v0.2.0/`) is named after the skill-improvement
   release it was written to validate; the suite evolves with the flows' observable
   behavior, not in lockstep with `VERSION`.
