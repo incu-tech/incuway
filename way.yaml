@@ -1,53 +1,79 @@
-# incu/incuway — the installable manifest for the whole incuway family (ways/v1alpha1).
+# incu/incu-way — the installable WayFamily for the whole incuway suite (ways/v1alpha1).
 #
-# THIS file is what `ways.sh add github:incu-tech/incu-way` consumes: the CLI clones the repo,
-# requires a `way.yaml` at the root, and installs the bundled skills (via skills.sh) and rules
-# (via steering). Bundled paths are relative to this repo root and must not escape it (no `..`),
-# so this manifest — not the per-flow manifests under `ways/` — is the installable one.
-# The per-flow manifests (`ways/incu-dev`, `ways/incu-bugs`) remain the canonical per-way
-# descriptions; this root way packages the family in one install.
+# THIS file is what `ways add github:incu-tech/incuway` consumes: the CLI clones the repo,
+# requires a `way.yaml` at the root, and installs — as ONE reviewable plan — the member ways
+# (`spec.members`) plus the payload shared across them (skills, knowledge, slots, requires).
 #
-# Validate:  ways.sh validate way.yaml
-#            ways.sh conformance way.yaml
-# Install:   ways.sh add github:incu-tech/incu-way     (or: ways.sh add /path/to/incu-way)
+# A family has NO `flow` of its own: each member way carries its own phase model and gate model.
+# That is the point of this artifact — incuway ships three genuinely different gated flows
+# (feature: 8 phases/5 gates · bug: 9 phases/2 gates · security: 8 phases/5 gates), which the
+# old root manifest could only fake by declaring the feature flow as if it were the family's.
+#
+# Bundled `path:`/`file:` values are relative to this repo root and must not escape it (no `..`).
+# Because a member way is installed from ITS OWN directory, the flow-driving skills are declared
+# here (family level) rather than inside each member — see ways/README.md ("Layout").
+#
+# Validate:  ways validate way.yaml
+#            ways conformance way.yaml     # → conformant (also conforms every bundled member)
+# Install:   ways add github:incu-tech/incuway          (or: ways add /path/to/incuway)
+#            ways add github:incu-tech/incuway --members dev,bugs    # a subset of the flows
 apiVersion: ways/v1alpha1
-kind: Way
+kind: WayFamily
 metadata:
   name: incu/incu-way
   displayName: Incuway
-  version: 1.3.0
-  description: The incuway family — gated development, bug-fixing, security remediation, onboarding, docs, assessment, and ticket-refinement flows, installed as one way.
+  version: 2.0.0
+  description: The incuway family — the gated feature, bug and security flows as member ways, plus the shared onboarding, docs, refinement and assessment skills, the state contract, and the baseline conventions, installed as one.
   discipline: development
   publisher: incu
-  homepage: https://github.com/incu-tech/incu-way
+  homepage: https://github.com/incu-tech/incuway
   keywords: [incu, workflow, gates, development, bugs, security]
 
 spec:
-  # All bundled: paths are relative to this repo root and exist in the bundle.
-  # `uses` (Slice 10) declares the slot ids each skill uses — the derivation source for
-  # the way's slots and the provenance bind/doctor show (`needed by: <skill>`).
+  # ── Members ───────────────────────────────────────────────────────────────────────────────
+  # The gated work-item flows: each keeps its own phases, gates, generated documents and its
+  # own `.ways/state.json` life cycle (one state file per worktree/branch). Consumers can
+  # install a subset (`--members dev,bugs`); the shared payload below installs regardless,
+  # because every member depends on it.
+  members:
+    - { id: dev, path: ways/incu-dev }           # incu/dev      → skills/incu-way-development
+    - { id: bugs, path: ways/incu-bugs }         # incu/bugs     → skills/incu-way-bugs
+    - { id: security, path: ways/incu-security } # incu/security → skills/snyk-remediation
+
+  # ── Shared skills ─────────────────────────────────────────────────────────────────────────
+  # Placed once for the whole family. Two groups:
+  #   1. The skills that DRIVE the member flows (development, bugs, snyk-remediation). They live
+  #      here, not inside each member dir, so the repo keeps a single `skills/` tree; the member
+  #      manifests describe the flow those skills execute.
+  #   2. Genuine building blocks — flows without a work-item state file (init, docs, po and the
+  #      three assessment flows: they produce a document under `docs/`) plus prepare-pr, the only
+  #      skill allowed to run git add/commit/push or `gh pr create`.
+  # `uses` declares the slot ids a skill consumes: it is the derivation source for the family's
+  # effective slot set and the provenance `bind`/`doctor` show (`needed by: <skill>`).
   skills:
-    - { id: init, path: skills/incu-way-init }
-    - { id: docs, path: skills/incu-way-docs }
-    - { id: arch-assessment, path: skills/incu-way-arch-assessment }
-    - { id: security-validation, path: skills/incu-way-security-validation }
-    - { id: threat-model, path: skills/incu-way-threat-model }
-    - { id: po, path: skills/incu-way-po }
-    - { id: development, path: skills/incu-way-development, uses: [sast, sca, code-quality] }
-    - { id: bugs, path: skills/incu-way-bugs, uses: [sast, sca, code-quality] }
-    - { id: snyk-remediation, path: skills/snyk-remediation, uses: [sast, sca] }
+    # 1. Member-flow drivers
+    - { id: development, path: skills/incu-way-development, uses: [vcs-host, sast, sca, code-quality] }
+    - { id: bugs, path: skills/incu-way-bugs, uses: [vcs-host, sast, sca, code-quality] }
+    - { id: snyk-remediation, path: skills/snyk-remediation, uses: [vcs-host, sast, sca] }
+    # 2. Building blocks shared by every member
+    - { id: init, path: skills/incu-way-init, uses: [vcs-host] }
+    - { id: docs, path: skills/incu-way-docs, uses: [vcs-host] }
+    - { id: po, path: skills/incu-way-po, uses: [vcs-host] }
+    - { id: arch-assessment, path: skills/incu-way-arch-assessment, uses: [vcs-host] }
+    - { id: security-validation, path: skills/incu-way-security-validation, uses: [vcs-host] }
+    - { id: threat-model, path: skills/incu-way-threat-model, uses: [vcs-host] }
     # The only skill that runs git add/commit/push or `gh pr create` — every flow defers
     # persistence to it, so an install without it dead-ends at every checkpoint.
     - { id: prepare-pr, path: skills/incu-way-prepare-pr, uses: [vcs-host] }
 
-  # Knowledge/rules placed into the target project on `ways add` (steering).
-  # Bundled as `file:` (works today: staged + placed with applicability frontmatter).
-  # The bare `pack:` form needs the registry to resolve (Slice 6); promote these to
-  # `pack: { name, source, versionConstraint }` once the packs are published externally.
+  # ── Shared knowledge ──────────────────────────────────────────────────────────────────────
+  # Rules placed into the target project on `ways add` (steering), once for the family.
+  # Bundled as `file:` (works today: staged + placed with applicability frontmatter). The bare
+  # `pack:` form needs the registry to resolve; promote these to `pack: { name, source,
+  # versionConstraint }` once the packs are published externally.
   knowledge:
-    # THE canonical state contract — how the gated flows read/write .ways/state.json.
-    # Always-on so it is in context whenever a flow runs; this is why an installed skill
-    # replaces the old board-specific STATE.md doc (which did not travel with `ways add`).
+    # THE canonical state contract — how the three member flows read/write .ways/state.json.
+    # Always-on so it is in context whenever any of them runs.
     - id: state-contract
       description: Canonical .ways/state.json contract (ways/v1alpha1) — envelope, enums, lifecycle, read/write points.
       applicability: { mode: always }
@@ -74,15 +100,18 @@ spec:
         required: true
         capability: vcs-host
 
-  # Slice 10: the effective slot set derives from skills[].uses; these entries ENRICH
-  # the derived slots (display metadata + suggested impls). `capabilitySlots` is the
-  # deprecated alias of `needs` (declaring both is a schema error).
+  # ── Shared slots ──────────────────────────────────────────────────────────────────────────
+  # The family's effective slot set is the UNION of these and every member's own slots — a slot
+  # id repeating across the family and a member is expected (a shared slot), not a collision.
+  # These entries also ENRICH the slots derived from `skills[].uses` (display metadata +
+  # suggested impls). `capabilitySlots` is the deprecated alias of `needs`.
   needs:
     - id: vcs-host
       displayName: Version-control host
-      description: Hosts the repo and PRs — where incu-way-prepare-pr opens and gates pull requests.
+      description: Hosts the repo and PRs — where incu-way-prepare-pr opens and gates pull requests for every flow.
       contract: ways.dev/vcs-host@1
       required: true
+      cardinality: single
       providerSource: environment
       options: [github, gitlab, bitbucket]
     - id: sast
@@ -113,29 +142,6 @@ spec:
       sast: snyk
       sca: snyk
       code-quality: sonarqube
-
-  # The family's canonical delivery flow (the development way — mirrors ways/incu-dev/way.yaml).
-  # The bug/security flows keep their own phase models inside their skills; they share this
-  # state contract (one .ways/state.json per worktree/branch, ways/v1alpha1, spec in ways/rulepacks/state-contract/rules/state-contract.md).
-  flow:
-    phases:
-      - { id: discovery, label: Discovery & intake }
-      - { id: prd, label: PRD }
-      - { id: plan, label: Implementation plan }
-      - { id: implementation, label: Implementation }
-      - { id: validation, label: Validation & scans }
-      - { id: review, label: Review & PRs }
-    gates:
-      - { id: prd, label: PRD review, afterPhase: prd, approval: user, enforcement: blocking }
-      - { id: plan, label: Plan review, afterPhase: plan, approval: user, enforcement: blocking }
-      - { id: testing, label: User testing, afterPhase: validation, approval: user, enforcement: blocking }
-      - { id: pr-develop, label: PR feat→develop, afterPhase: review, approval: user, enforcement: blocking }
-      - { id: pr-main, label: PR develop→main, afterPhase: review, approval: user, enforcement: blocking }
-    generates:
-      - { name: PRD.md, pathTemplate: 'docs/prds/{slug}/PRD.md', producedInPhase: prd, gate: prd, statusField: Status, required: true }
-      - { name: PLAN.md, pathTemplate: 'docs/prds/{slug}/PLAN.md', producedInPhase: plan, gate: plan, statusField: Status, required: true }
-      - { name: TESTING.md, pathTemplate: 'docs/prds/{slug}/TESTING.md', producedInPhase: validation, gate: testing }
-    state: .ways/state.json
 
   # Bundled inside the init skill so it travels with `ways add` (ways does not place
   # `templates:` yet — Slice-6+; skills travel wholesale, so init can copy it at runtime).
