@@ -49,6 +49,7 @@ See `README.md` for the full project context.
     versioning.sh                  # Eval guarding skill-frontmatter/VERSION coherence (--fix to sync)
     isolation-choice.sh            # Eval guarding the branch/worktree choice
     no-auto-commit.sh              # Eval guarding that no flow commits/pushes/opens PRs itself
+    gitignore-hygiene.sh           # Eval guarding the .gitignore entries incu-way-init writes
     v0.2.0/                        # Behavior eval suite (task/rubric style)
 ```
 
@@ -141,7 +142,7 @@ Template for the `CLAUDE.md` of new projects, bundled inside `incu-way-init` so 
 2. Make sure the frontmatter has `name`, `version`, and `description`.
 3. Include explicit gates, an explicit isolation choice (branch or worktree), and a validation checklist with security scans.
 4. For version bumps, edit `VERSION`, run `bash evals/versioning.sh --fix` to sync every skill frontmatter, then `bash evals/versioning.sh` to verify.
-5. Run `./evals/isolation-choice.sh` if the change touches isolation, branch, or worktree; run `./evals/no-auto-commit.sh` if it touches committing, pushing, or PR creation.
+5. Run `./evals/isolation-choice.sh` if the change touches isolation, branch, or worktree; run `./evals/no-auto-commit.sh` if it touches committing, pushing, or PR creation; run `./evals/gitignore-hygiene.sh` if it touches `.gitignore` guidance.
 6. Update or add tasks in `evals/v0.2.0/` when the change affects observable agent behavior.
 7. Declare the skill in the root `way.yaml` under `spec.skills` (with its `uses` slot ids) — that is
    what places it on `ways add`. A skill that is **not** listed there never installs.
