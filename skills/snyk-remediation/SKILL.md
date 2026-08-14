@@ -160,7 +160,7 @@ At session start, read `.ways/state.json` if it exists. If its `branch` matches 
 | FINDINGS.md written | `findings` | `FINDINGS.md` → `approved` |
 | PLAN.md drafted | `plan` | `PLAN.md` → `in-review` |
 | **Gate 2 passed (plan)** | `implementation` | `PLAN.md` → `approved`; gate `plan` → `passed`; **generate `steps` — one entry per in-scope finding, all `todo`** |
-| Fixing each finding | `implementation` | mark its step `in-progress` → `done` (or `blocked`) as you go |
+| Fixing each finding | `implementation` | mark its step `in-progress` → `done` (or `blocked`) — write the state file **per finding, immediately**, never batched at the end |
 | RESOLUTION.md written | `validation` | `RESOLUTION.md` → `approved` |
 | **Gate 3 passed (resolution)** | `validation` | gate `resolution` → `passed` |
 | PR fix→develop opened | `pr-develop` | gate `pr-develop` → still `pending`; set its `url` to the PR link |

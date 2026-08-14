@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 2,
+  "updatedAt": "2026-06-15T12:30:00Z",
+  "flow": "feature",
+  "way": "incu/dev",
+  "wayVersion": "1.3.0",
+  "discipline": "development",
+  "slug": "003-contact-export",
+  "branch": "feat/003-contact-export",
+  "worktree": "",
+  "isolationType": "branch",
+  "title": "Contact export",
+  "ticket": "PROJ-1234",
+  "lastPhase": "plan",
+  "phase": "implementation",
+  "documents": [
+    { "name": "PRD.md", "path": "docs/prds/003-contact-export/PRD.md", "status": "approved" },
+    { "name": "PLAN.md", "path": "docs/prds/003-contact-export/PLAN.md", "status": "approved" },
+    { "name": "TESTING.md", "path": "docs/prds/003-contact-export/TESTING.md", "status": "pending" }
+  ],
+  "gates": [
+    { "id": "prd", "label": "PRD review", "status": "passed", "at": "2026-06-15T11:00:00Z" },
+    { "id": "plan", "label": "Plan review", "status": "passed", "at": "2026-06-15T11:45:00Z" },
+    { "id": "testing", "label": "User testing", "status": "pending", "at": null },
+    { "id": "pr-develop", "label": "PR feat→develop", "status": "pending", "at": null },
+    { "id": "pr-main", "label": "PR develop→main", "status": "pending", "at": null }
+  ],
+  "steps": [
+    { "id": "A1", "label": "Add export schema migration", "status": "done" },
+    { "id": "A2", "label": "Export API endpoint", "status": "in-progress" },
+    { "id": "B1", "label": "Export button + modal (UI)", "status": "todo" }
+  ]
+}

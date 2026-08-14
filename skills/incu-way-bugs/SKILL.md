@@ -106,7 +106,7 @@ At session start, read `.ways/state.json` if it exists. If its `branch` matches 
 | Reproduction test added (failing) | `reproduction` | — |
 | FIX_PLAN.md drafted | `fix-plan` | `FIX_PLAN.md` → `in-review` |
 | **Gate passed (fix plan)** | `implementation` | `FIX_PLAN.md` → `approved`; gate `fix-plan` → `passed`; **generate `steps` from the fix plan — one entry per actionable change, all `todo`** |
-| During implementation | `implementation` | mark each step `in-progress` → `done` (or `blocked`) as you go |
+| During implementation | `implementation` | mark each step `in-progress` → `done` (or `blocked`) — write the state file **per step, immediately**, never batched at the end of the phase |
 | Validation | `validation` | — |
 | PR fix→develop opened | `pr` | gate `pr` → still `pending`; set its `url` to the PR link |
 | PR merged | `done` | gate `pr` → `passed` |

@@ -112,7 +112,7 @@ At session start, read `.ways/state.json` if it exists. If its `branch` matches 
 | **Gate 1 passed** | `plan` | `PRD.md` → `approved`; gate `prd` → `passed` |
 | Plan drafted | `plan` | `PLAN.md` → `in-review` |
 | **Gate 2 passed** | `implementation` | `PLAN.md` → `approved`; gate `plan` → `passed`; **generate `steps` from the PLAN.md tasks — one entry per actionable task, all `todo`** |
-| During implementation | `implementation` | mark each step `in-progress` → `done` (or `blocked`) as you go |
+| During implementation | `implementation` | mark each step `in-progress` → `done` (or `blocked`) — write the state file **per step, immediately**, never batched at the end of the phase |
 | Validation | `validation` | `TESTING.md` → `approved` once written |
 | **Gate 3 passed** | `review` | gate `testing` → `passed` |
 | PR feat→develop opened | `pr-develop` | gate `pr-develop` → still `pending`; set its `url` to the PR link |
