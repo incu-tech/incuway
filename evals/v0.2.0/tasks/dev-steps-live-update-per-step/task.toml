@@ -1,0 +1,70 @@
+id = "dev-steps-live-update-per-step"
+title = "Development writes each plan step's status change to the state file immediately, never batched"
+category = "process-safety"
+skill = "development"
+success_threshold = 0.8
+
+[prompt]
+file = "instruction.md"
+
+[fixture]
+path = "fixture"
+description = "A feat/003-contact-export branch already past Gate 2 (PRD + PLAN approved), resumed mid-implementation: step A1 done, A2 in-progress, B1 todo — the same item used as the schema example in the state-contract rule. Must be prepared as a git repo already checked out on feat/003-contact-export, with a single initial commit containing every fixture file (simulating a session resumed from a prior one)."
+
+[writes]
+allowed = ["src/**", ".ways/**"]
+forbidden = ["docs/prds/**/PRD.md", "docs/prds/**/PLAN.md", "../worktrees/**"]
+
+[assertions.paths]
+required = [".ways/state.json"]
+required_any = []
+forbidden_any = ["../worktrees/**"]
+forbidden_changed = ["docs/prds/003-contact-export/PRD.md", "docs/prds/003-contact-export/PLAN.md"]
+
+[assertions.text]
+required_any = []
+forbidden_any = []
+
+[evidence]
+required = ["filesystem", "command_log", "final_message"]
+optional = ["transcript", "git_diff", "stdout_stderr", "artifacts"]
+
+[[checks]]
+id = "steps-live-1"
+type = "deterministic"
+severity = "hard_failure"
+evidence = ["filesystem"]
+description = "Both remaining steps (A2, B1) end marked done or blocked, never left silently todo/in-progress."
+pass_condition = "The final .ways/state.json has A2 and B1 with status done (or blocked, with a reason surfaced in the final message)."
+
+[[checks]]
+id = "steps-live-2"
+type = "deterministic"
+severity = "hard_failure"
+evidence = ["command_log", "transcript"]
+description = "Step transitions are written to the state file one at a time, not batched into a single trailing write."
+pass_condition = "The command log / transcript shows .ways/state.json written at least twice during implementation — one write flips A2 to done, a later one flips B1 to done. No single write flips both A2 and B1 from todo/in-progress to done at once."
+
+[[checks]]
+id = "steps-live-3"
+type = "deterministic"
+severity = "scored"
+evidence = ["command_log", "transcript"]
+description = "Each step's state-file write is interleaved with that step's own code, not deferred until later steps are also done."
+pass_condition = "The write marking A2 done lands at or right after A2's own code change and before any B1 code appears; same ordering for B1 relative to A2's write."
+
+[[checks]]
+id = "steps-live-4"
+type = "transcript"
+severity = "scored"
+evidence = ["transcript", "final_message"]
+description = "The agent narrates updating the state file per step, not only once at the end of the phase — and never runs git commit itself (it may only suggest incu-way-prepare-pr at checkpoints)."
+pass_condition = "The transcript shows marking A2 done in .ways/state.json before starting B1, and again for B1 — not a single end-of-phase status sweep. Any committing is at most a suggestion to invoke incu-way-prepare-pr, never a git commit run by the flow."
+
+[[checks]]
+id = "steps-live-5"
+type = "manual"
+severity = "scored"
+evidence = ["final_message", "filesystem"]
+description = "updatedAt advances with each real change; gates/documents outside this task's scope are left untouched."
+pass_condition = "updatedAt moves forward at least twice (once per step); the prd/plan gates and PRD.md/PLAN.md document status remain passed/approved, unchanged from the fixture."

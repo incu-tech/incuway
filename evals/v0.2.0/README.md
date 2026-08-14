@@ -49,6 +49,7 @@ If optional evidence is unavailable, checks that depend only on it should be mar
 |------|-------|
 | `dev-isolation-choice-before-files` | Development skill must ask branch vs worktree before creating PRD, plan, code, or docs. |
 | `dev-no-auto-commit-suggest-prepare-pr` | Development skill must never commit/push/open a PR itself — it only suggests invoking `incu-way-prepare-pr`. |
+| `dev-steps-live-update-per-step` | Development skill must write each plan step's status change to `.ways/state.json` immediately as it happens, never batch several steps into one write at the end of the phase. |
 | `po-gate1-split-before-tickets` | PO skill must stop at Gate 1 (scope and ticket split) before drafting any ticket, surfacing ambiguities as open questions. |
 
 ### Delegation Prompt
