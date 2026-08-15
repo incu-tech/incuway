@@ -49,20 +49,63 @@ say so and stop — there is nothing to commit.
 
 ## Step 3 — Propose a commit message
 
-Don't guess a generic message — the calling flow's own SKILL.md already documents the
-exact commit-message format for its phase (look for a "commit message format" /
-"suggested commit message" section near the checkpoint the user is at, or infer the
-type from the branch prefix: `feat/` → `feat({slug}): ...`, `fix/` → `fix({slug}): ...`,
-`fix/security-` → `fix(security): ...`, `chore/` → `chore(...)`, `docs/` → `docs({slug}): ...`,
-`assess/` → `assess({slug}): ...`). If no convention is evident, ask the user.
+Every commit is [**Conventional Commits**](https://www.conventionalcommits.org/en/v1.0.0/),
+no exceptions:
 
-If the state file `.ways/state.json` changed alongside other files, it is
-committed **together with** those files in the same commit — never in a separate,
-unannounced commit.
+```
+<type>(<scope>)<!>: <description>
 
-If more than one logical unit of work is staged/dirty (e.g. two unrelated checkpoints),
-say so and ask whether to split into separate commits rather than bundling them
-silently.
+<body>
+
+<footer>
+```
+
+**type** — one of `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`,
+`chore`, `revert`. These are the only valid values; there is no repo-specific type. Don't
+guess it — the calling flow's own SKILL.md already documents the commit-message format for
+its phase (look for a "commit message format" / "suggested commit message" section near the
+checkpoint the user is at), or infer it from the branch prefix:
+
+| Branch prefix | type | scope |
+|---|---|---|
+| `feat/{slug}` | `feat` | `{slug}` |
+| `fix/{slug}` | `fix` | `{slug}` |
+| `fix/security-{slug}` | `fix` | `security` |
+| `chore/{slug}` | `chore` | `{slug}` (omit if repo-wide, e.g. a version bump touching every file) |
+| `docs/{slug}` | `docs` | `{slug}` |
+| `assess/{slug}` | `docs` | `{slug}` (an assessment/threat-model/security-validation report is documentation — never invent a non-standard type like `assess:`) |
+
+If neither the branch prefix nor the calling flow's own format section makes the type
+obvious, ask the user rather than guess.
+
+**description** — imperative mood ("add", never "added"/"adds"), lowercase right after the
+colon, no trailing period, short enough that the whole `type(scope): description` line
+stays under ~72 columns. It states *what* changed; the body carries *why*.
+
+**`!`** — append immediately after the scope (or the type, if there's no scope) only when
+this commit breaks a documented contract: a schema, a public CLI flag, an on-disk format,
+anything a downstream consumer depends on. Always paired with a `BREAKING CHANGE:` footer
+explaining what breaks and how to adapt — never one without the other, and never used for
+an internal refactor with no externally observable break.
+
+**Body** — one blank line after the description, then prose wrapped at ~72 columns.
+Explains the reasoning a diff alone can't show: why this approach over an alternative, what
+it replaces, what a reviewer needs to know that isn't obvious from the code. It is never a
+restatement of the diff line by line, and it's optional for a change small enough that the
+description already says everything (a one-line typo fix doesn't need a body).
+
+**Footer** — one blank line after the body: `Closes #123` / `Refs #123` for an issue this
+resolves or relates to (only when one genuinely exists in this repo — never fabricate a
+number), and `BREAKING CHANGE: <description>` whenever `!` was used above.
+
+**Atomicity.** One logical change per commit — each one should build and pass its own
+tests/evals in isolation, so a future `git bisect` or a revert of just this commit never
+drags in unrelated work. If the state file `.ways/state.json` changed alongside other
+files, it's committed **together with** them in the same commit (it's metadata about that
+same change, not a separate one) — but if more than one *unrelated* logical unit of work is
+staged/dirty (e.g. two unrelated checkpoints, or a drive-by refactor riding along with an
+unrelated feature), say so and propose splitting into separate commits rather than bundling
+them silently.
 
 ### Gate — commit confirmation
 
@@ -82,6 +125,12 @@ If yes, draft the title/body using the same template the calling flow already de
 for its PR phase (summary, links to the relevant docs, the validation checklist, etc.
 — see the flow's own SKILL.md for the exact body it expects). Show the drafted
 title/body to the user.
+
+**The PR title is a Conventional Commits header** (`type(scope): description`, same rules
+as Step 3) — most repos here squash-merge, so the title *becomes* the permanent commit
+message. If the branch carries more than one commit with different types, pick the type of
+the change a reviewer would call the point of the PR (usually the last, most substantial
+one), not just the first commit's.
 
 ### Public-repo content check (before drafting the body)
 
