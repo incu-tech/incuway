@@ -1,6 +1,6 @@
 ---
 name: incu-way-security-validation
-version: 0.1.0
+version: 0.1.1
 description: Use to validate code against common security rulesets and standards (OWASP Top 10, OWASP ASVS, OWASP API Security Top 10, CWE Top 25) by reviewing the code, a module, or the current branch's changes control-by-control. Produces a traceable compliance report marking each control pass/fail/N-A with evidence, plus prioritized remediation pointers. Invoke standalone to audit against a standard, or from another flow (incu-way-development at validation, incu-way-bugs) to check new code before merge. This is a standards-driven manual review — it complements snyk-remediation (automated SAST/SCA scanning), it does not replace it.
 ---
 
@@ -32,6 +32,15 @@ Two invocation modes:
 
 This is an **assessment flow**. Like `incu-way-docs`, it does **not** maintain a
 `.ways/state.json`.
+
+---
+
+## Repo eligibility check (before anything else)
+
+Before Phase 0, check `~/.ways/config.yaml`'s `blacklist` (format in the root `CLAUDE.md`)
+for the current repo. If it matches, tell the user this repo is blacklisted from incu-way
+and ask whether to proceed anyway (a one-off exception) or stop — do not run any phase
+until they answer. Missing file, or no match: proceed normally.
 
 ---
 

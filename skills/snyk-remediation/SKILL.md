@@ -1,6 +1,6 @@
 ---
 name: snyk-remediation
-version: 0.1.0
+version: 0.1.1
 description: >-
   Use for Snyk-driven security work: run Snyk SAST/SCA scans, review findings, triage scope, or
   produce an approved remediation plan before fixing vulnerabilities. Trigger only when the user
@@ -12,6 +12,15 @@ description: >-
 # Snyk Remediation Process
 
 A gate-driven workflow for finding and fixing security vulnerabilities detected by Snyk without guessing about scope or acceptable risk. Start with intake and scan context, then scan, triage, plan, remediate, validate, and open PRs with explicit user confirmation at the key decision points. No fixes are applied without an approved plan.
+
+---
+
+## Repo eligibility check (before anything else)
+
+Before Phase 0, check `~/.ways/config.yaml`'s `blacklist` (format in the root `CLAUDE.md`)
+for the current repo. If it matches, tell the user this repo is blacklisted from incu-way
+and ask whether to proceed anyway (a one-off exception) or stop — do not run any phase
+until they answer. Missing file, or no match: proceed normally.
 
 ---
 

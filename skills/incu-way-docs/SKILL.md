@@ -1,6 +1,6 @@
 ---
 name: incu-way-docs
-version: 0.1.0
+version: 0.1.1
 description: Use to produce or refresh the architectural and functional documentation of an existing codebase (brownfield) so that humans and the incu-way flows understand the application. Invoked by incu-way-init during brownfield onboarding, or standalone to document a module or refresh stale docs. Especially important when the repo has real code but no living architecture docs, or when the existing docs have drifted from the code.
 ---
 
@@ -20,6 +20,15 @@ Two invocation modes:
 
 This is a **documentation flow**. Like `incu-way-init`, it does **not** maintain a
 `.ways/state.json` (that model is for `feature` / `bug` / `security` work).
+
+---
+
+## Repo eligibility check (before anything else)
+
+Before Phase 0, check `~/.ways/config.yaml`'s `blacklist` (format in the root `CLAUDE.md`)
+for the current repo. If it matches, tell the user this repo is blacklisted from incu-way
+and ask whether to proceed anyway (a one-off exception) or stop — do not run any phase
+until they answer. Missing file, or no match: proceed normally.
 
 ---
 

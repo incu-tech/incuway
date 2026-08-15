@@ -1,6 +1,6 @@
 ---
 name: incu-way-init
-version: 0.1.0
+version: 0.1.1
 description: Use when adopting incu-way in a repository for the first time — to bootstrap the project so the development, bug, and security flows have what they need. Detects greenfield (new, empty repo) vs brownfield (existing application — the common case), scaffolds CLAUDE.md, the docs/ tree, the branch model, and .ways/, and drives the architectural/functional documentation of the existing code. Also use to re-initialize or refresh a project that already uses incu-way.
 ---
 
@@ -17,6 +17,15 @@ This is a **bootstrap flow**, not a work-item flow. It does **not** create a
 `.ways/state.json` (that model is for `feature` / `bug` / `security`
 work — see the ways/v1alpha1 state contract, shipped as the always-on `state-contract` rule). Instead,
 **this skill creates the `.ways/` directory** the work-item flows later populate.
+
+---
+
+## Repo eligibility check (before anything else)
+
+Before Phase 0, check `~/.ways/config.yaml`'s `blacklist` (format in the root `CLAUDE.md`)
+for the current repo. If it matches, tell the user this repo is blacklisted from incu-way
+and ask whether to proceed anyway (a one-off exception) or stop — do not run any phase
+until they answer. Missing file, or no match: proceed normally.
 
 ---
 

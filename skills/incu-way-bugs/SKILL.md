@@ -1,12 +1,21 @@
 ---
 name: incu-way-bugs
-version: 0.1.0
+version: 0.1.1
 description: Use for bug, regression, broken behavior, or production issue reports that need expected behavior, reproduction evidence, root cause analysis, or a fix plan before code changes. Trigger when the report is incomplete, high-impact, user-facing, or likely tied to recent changes. Do not trigger for new feature work, security scan remediation, documentation-only requests, or tiny direct fixes where the user explicitly asks to patch now.
 ---
 
 # Bug Fix Process
 
 A structured, gate-driven workflow for fixing bugs without guessing. Start with discovery and intake, then move through bug documentation, analysis, reproduction, fix planning, implementation, validation, and PR review. The critical gate remains fix plan confirmation: no fix code is written before the user approves the plan.
+
+---
+
+## Repo eligibility check (before anything else)
+
+Before Phase 0, check `~/.ways/config.yaml`'s `blacklist` (format in the root `CLAUDE.md`)
+for the current repo. If it matches, tell the user this repo is blacklisted from incu-way
+and ask whether to proceed anyway (a one-off exception) or stop — do not run any phase
+until they answer. Missing file, or no match: proceed normally.
 
 ---
 
@@ -29,6 +38,9 @@ Before touching anything:
    - relevant modules, functions, tests, or integrations
    - recent commits or releases that may have introduced the regression
    - any prior bug reports, PRDs, or decisions that define expected behavior
+   - other repos in the same product that might share this regression — check the hub
+     repo's `CLAUDE.md` for a `repos:` section (wins when present), or fall back to
+     `~/.ways/config.yaml`'s `linkedRepos` (format in the root `CLAUDE.md`)
 5. Scale discovery to the case:
    - for a small, well-understood bug, keep the pass lightweight
    - for ambiguous, high-severity, or production-facing issues, dig deeper before analysis and fix planning

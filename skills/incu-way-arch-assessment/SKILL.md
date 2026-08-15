@@ -1,6 +1,6 @@
 ---
 name: incu-way-arch-assessment
-version: 0.1.0
+version: 0.1.1
 description: Use to assess the software architecture of a codebase, a module, or the current branch's changes against quality attributes and design principles (coupling/cohesion, layering/hexagonal adherence, separation of concerns, scalability, maintainability, testability). Produces a traceable assessment report with rated findings and prioritized recommendations. Invoke standalone to audit a system or design, or from another flow (incu-way-development at planning, incu-way-docs, incu-way-init) to evaluate a proposed or existing design before committing to it. Especially important before a large change, a refactor decision, or when tech debt and structural risk need to be made explicit.
 ---
 
@@ -23,6 +23,15 @@ This is an **assessment flow**. Like `incu-way-docs`, it does **not** maintain a
 `.ways/state.json` (that model is for `feature` / `bug` / `security` work). It
 assesses and recommends — it does **not** implement fixes. Acting on a recommendation is a
 separate `incu-way-development` or `incu-way-bugs` work item.
+
+---
+
+## Repo eligibility check (before anything else)
+
+Before Phase 0, check `~/.ways/config.yaml`'s `blacklist` (format in the root `CLAUDE.md`)
+for the current repo. If it matches, tell the user this repo is blacklisted from incu-way
+and ask whether to proceed anyway (a one-off exception) or stop — do not run any phase
+until they answer. Missing file, or no match: proceed normally.
 
 ---
 

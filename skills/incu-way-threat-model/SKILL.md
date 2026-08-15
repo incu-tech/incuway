@@ -1,6 +1,6 @@
 ---
 name: incu-way-threat-model
-version: 0.1.0
+version: 0.1.1
 description: Use to build a small, focused threat model for the current work or new code — a feature, a service, an API, or the changes on the current branch. Decomposes the system into assets, entry points, and trust boundaries, enumerates threats with STRIDE, and records mitigations and residual risk in a traceable report with a data-flow diagram. Invoke standalone to threat-model a component, or from another flow (incu-way-development after the PRD/plan, incu-way-bugs for a security-relevant fix) to surface threats before code is written or shipped. Especially important for new external surfaces, auth/payment/PII flows, or trust-boundary changes.
 ---
 
@@ -28,6 +28,15 @@ a mitigation is a task in the calling flow or a follow-up `incu-way-development`
 
 Keep it **small.** Scale the model to the change: a single new endpoint needs one data-flow
 diagram and a handful of threats, not a 40-page document. Depth follows risk.
+
+---
+
+## Repo eligibility check (before anything else)
+
+Before Phase 0, check `~/.ways/config.yaml`'s `blacklist` (format in the root `CLAUDE.md`)
+for the current repo. If it matches, tell the user this repo is blacklisted from incu-way
+and ask whether to proceed anyway (a one-off exception) or stop — do not run any phase
+until they answer. Missing file, or no match: proceed normally.
 
 ---
 
