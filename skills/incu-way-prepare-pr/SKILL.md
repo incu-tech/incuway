@@ -126,14 +126,19 @@ Do not assume a commit implies the user also wants to push or open a PR. Ask:
 > Do you also want me to push `{branch}` and open a PR to `{base}`?
 
 If yes, draft the title/body. **The body always follows the fixed structure in
-`.github/PULL_REQUEST_TEMPLATE.md`** — Summary, Type of change, Root cause / motivation,
-What changed, Testing, Breaking changes, Related issues — never a free-form essay instead
-of it, and never dropping a section (write "None" / "N/A" rather than omit one that
-doesn't apply, except "Related issues", which is deleted entirely when there is none). The
-calling flow's own "PR body" section (in its SKILL.md) supplies the *content* that goes
-into these sections — links to its docs under "What changed", its validation checklist
-under "Testing", and so on — but the section structure itself always comes from the
-template, not from the flow. Show the drafted title/body to the user.
+`.github/PULL_REQUEST_TEMPLATE.md`** — Descripción, Tipo de cambio, Problema / Motivación,
+Solución, Cómo probarlo, Screenshots / GIFs, Checklist, Issues relacionados, Notas para el
+reviewer — never a free-form essay instead of it, and never dropping a section (write
+"N/A" / "No aplica" rather than omit one that doesn't apply — "Screenshots / GIFs" and
+"Issues relacionados" are the only two that get deleted entirely when there's nothing
+visual to show or no issue to link). The calling flow's own "PR body" section (in its
+SKILL.md) supplies the *content* that goes into these sections — links to its docs under
+"Solución"/"Cómo probarlo", its validation checklist folded into "Checklist", and so on —
+but the section structure itself always comes from the template, not from the flow. Every
+box in "Checklist" gets checked or explicitly left unchecked with a one-line reason
+(never silently ticked without verifying it's actually true) — this includes the two
+org-specific items (no internal attribution; PR title is a valid Conventional Commits
+header). Show the drafted title/body to the user.
 
 **The PR title is a Conventional Commits header** (`type(scope): description`, same rules
 as Step 3) — most repos here squash-merge, so the title *becomes* the permanent commit

@@ -20,10 +20,15 @@ SKILL="skills/incu-way-prepare-pr/SKILL.md"
 
 [ -f "$ROOT_DIR/$TEMPLATE" ] || fail "$TEMPLATE is missing"
 
-for section in "## Summary" "## Type of change" "## Root cause / motivation" \
-  "## What changed" "## Testing" "## Breaking changes" "## Related issues"; do
+for section in "## Descripción" "## Tipo de cambio" "## Problema / Motivación" \
+  "## Solución" "## Cómo probarlo" "## Screenshots / GIFs" "## Checklist" \
+  "## Issues relacionados" "## Notas para el reviewer"; do
   require_contains "$TEMPLATE" "$section"
 done
+
+# The two org-specific checklist items must survive alongside the generic ones.
+require_contains "$TEMPLATE" "No incluye nombres de personas, canales de Slack, ni conversaciones internas"
+require_contains "$TEMPLATE" "El título del PR es un header Conventional Commits válido"
 
 # incu-way-prepare-pr must point to the template as the fixed body structure, not just
 # leave it as a passive file nobody reads.
