@@ -1,6 +1,6 @@
 ---
 name: incu-way-prepare-pr
-version: 0.1.0
+version: 0.1.1
 description: The only skill in this repo that runs `git add`, `git commit`, `git push`, or `gh pr create`. Invoke ONLY when the user explicitly asks to commit, push, or open/prepare a PR (e.g. "commit this", "commit progress", "push this branch", "prepare the PR", "open the PR"). No other incu-way skill may invoke this automatically or run those git commands itself — they may only suggest it to the user.
 ---
 
@@ -82,6 +82,29 @@ If yes, draft the title/body using the same template the calling flow already de
 for its PR phase (summary, links to the relevant docs, the validation checklist, etc.
 — see the flow's own SKILL.md for the exact body it expects). Show the drafted
 title/body to the user.
+
+### Public-repo content check (before drafting the body)
+
+Check whether `{base}`'s repo is public: `gh repo view {owner}/{repo} --json isPrivate -q .isPrivate`.
+Treat it as public whenever the check says so, or whenever it can't be run — never
+assume private by default.
+
+If the repo is public, the title, body, branch name, and commit messages must never
+carry:
+
+- A person's name, handle, or initials — not the reporter, not a reviewer, not anyone
+  quoted in an internal conversation.
+- The name of an internal channel (Slack or otherwise), or a date tied to one.
+- A verbatim quote or close paraphrase of an internal conversation (Slack, a meeting,
+  a DM).
+
+Keep the technical substance — what broke, why, what changed, how it was validated —
+under a source-free framing (e.g. "reportado internamente", "detectado durante uso
+real"). If a document this PR links to (a BUG.md's `Context`, a PRD's intake notes,
+etc.) names someone or cites an internal thread, that's fine to leave in the doc
+itself — just never copy it into the PR body, branch name, or commit message.
+
+If the repo is private, none of this applies — write the PR normally.
 
 ### Gate — push/PR confirmation
 
