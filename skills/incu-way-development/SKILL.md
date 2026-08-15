@@ -1,6 +1,6 @@
 ---
 name: incu-way-development
-version: 0.1.0
+version: 0.1.1
 description: Use for product feature work that explicitly needs discovery, a PRD, gated implementation planning, or stakeholder approval before code changes. Trigger for ambiguous, cross-cutting, client-requested, or high-risk functionality changes. Do not trigger for small direct code edits, routine refactors, bug fixes, security scans, documentation-only work, or questions about existing code.
 ---
 
@@ -139,8 +139,27 @@ docs/prds/{prd-slug}/PRD.md
 **Slug format:** `{zero-padded-id}-{kebab-feature-name}`
 Example: `003-contact-export`, `007-auto-tagging-rules`
 
-IDs are sequential across `docs/prds/` **and** `docs/requirements/` — check both to find
-the next ID. If this feature comes from an `incu-way-po` ticket, reuse the ticket's slug
+**Finding the next ID — check every place it could already be taken, not just this
+checkout.** A counter that only looks at the current branch collides the moment two
+features are worked in parallel — two worktrees/branches off the same base each compute
+the same "next" number independently, and this has happened in practice. Before assigning
+an ID:
+
+1. List IDs already used in **this** checkout's `docs/prds/` and `docs/requirements/`.
+2. List every other worktree of this repo (`git worktree list`) and read **their**
+   `docs/prds/` and `docs/requirements/` too — a sibling worktree's PRD doesn't show up in
+   `git status` here, but it's sitting right there on disk.
+3. Fetch the default branch (`git fetch origin {default}`) and list what's already merged
+   there (`git ls-tree --name-only origin/{default} -- docs/prds/ docs/requirements/`) — an
+   ID merged by someone else since this branch was created won't be in your local tree yet.
+
+Take the ID **one past the highest** found across all three. This closes the case that
+keeps happening in practice (parallel worktrees on the same machine, or a merge that landed
+since `develop` was last pulled) — it can't close a true two-different-machines,
+never-fetched race, which is an inherent limit of a client-side counter with no central
+registry.
+
+If this feature comes from an `incu-way-po` ticket, reuse the ticket's slug
 so `docs/requirements/{slug}/` and `docs/prds/{slug}/` line up.
 
 ### PRD structure

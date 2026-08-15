@@ -1,6 +1,6 @@
 ---
 name: incu-way-prepare-pr
-version: 0.1.0
+version: 0.1.1
 description: The only skill in this repo that runs `git add`, `git commit`, `git push`, or `gh pr create`. Invoke ONLY when the user explicitly asks to commit, push, or open/prepare a PR (e.g. "commit this", "commit progress", "push this branch", "prepare the PR", "open the PR"). No other incu-way skill may invoke this automatically or run those git commands itself — they may only suggest it to the user.
 ---
 

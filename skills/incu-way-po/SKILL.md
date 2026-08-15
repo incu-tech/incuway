@@ -1,6 +1,6 @@
 ---
 name: incu-way-po
-version: 0.1.0
+version: 0.1.1
 description: Use to turn a raw need, idea, or client request into development-ready tickets before any development flow starts — validate feasibility against the actual codebase(s), map affected repos and cross-repo contracts, and close open questions up front. Trigger for "refine this ticket", "write the requirements for X", "is X feasible", "prepare tickets for this need", or when a request spans multiple repositories. Do not trigger for tickets that are already well-specified, plain defect reports (use incu-way-bugs), or when the user asks to start building immediately.
 ---
 
@@ -144,8 +144,23 @@ the selected working location. Never write files to `develop` or `main` directly
 split.
 
 **Slug format:** `{zero-padded-id}-{kebab-ticket-name}` (e.g. `004-contact-export-api`).
-IDs are sequential across `docs/requirements/` **and** `docs/prds/` — check both to find
-the next ID, because the ticket slug becomes the PRD slug when development picks it up.
+The ticket slug becomes the PRD slug when development picks it up, so it has to be unique
+against both namespaces.
+
+**Finding the next ID — check every place it could already be taken, not just this
+checkout.** A counter that only looks at the current branch collides the moment two needs
+are worked in parallel — two worktrees/branches off the same base each compute the same
+"next" number independently, and this has happened in practice. Before assigning an ID:
+
+1. List IDs already used in **this** checkout's `docs/requirements/` and `docs/prds/`.
+2. List every other worktree of this repo (`git worktree list`) and read **their**
+   `docs/requirements/` and `docs/prds/` too — a sibling worktree's ticket doesn't show up
+   in `git status` here, but it's sitting right there on disk.
+3. Fetch the default branch (`git fetch origin {default}`) and list what's already merged
+   there (`git ls-tree --name-only origin/{default} -- docs/requirements/ docs/prds/`) — an
+   ID merged by someone else since this branch was created won't be in your local tree yet.
+
+Take the ID **one past the highest** found across all three.
 
 ### TICKET.md structure
 
