@@ -125,10 +125,15 @@ Do not assume a commit implies the user also wants to push or open a PR. Ask:
 
 > Do you also want me to push `{branch}` and open a PR to `{base}`?
 
-If yes, draft the title/body using the same template the calling flow already defines
-for its PR phase (summary, links to the relevant docs, the validation checklist, etc.
-— see the flow's own SKILL.md for the exact body it expects). Show the drafted
-title/body to the user.
+If yes, draft the title/body. **The body always follows the fixed structure in
+`.github/PULL_REQUEST_TEMPLATE.md`** — Summary, Type of change, Root cause / motivation,
+What changed, Testing, Breaking changes, Related issues — never a free-form essay instead
+of it, and never dropping a section (write "None" / "N/A" rather than omit one that
+doesn't apply, except "Related issues", which is deleted entirely when there is none). The
+calling flow's own "PR body" section (in its SKILL.md) supplies the *content* that goes
+into these sections — links to its docs under "What changed", its validation checklist
+under "Testing", and so on — but the section structure itself always comes from the
+template, not from the flow. Show the drafted title/body to the user.
 
 **The PR title is a Conventional Commits header** (`type(scope): description`, same rules
 as Step 3) — most repos here squash-merge, so the title *becomes* the permanent commit
