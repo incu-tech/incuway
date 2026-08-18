@@ -165,6 +165,14 @@ what the flow uses to report the "next step".
 
 ## `.gitignore` note
 
-`.ways/state.json` **must stay tracked** (resume-by-branch depends on it being committed via
-`incu-way-prepare-pr`). If the `ways` CLI is in use, ignore only its cache — add `.ways/cache/`
-to `.gitignore`, **never** blanket-ignore `.ways/`.
+`.ways/state.json` **should stay tracked** — resume-by-branch depends on it being committed
+via `incu-way-prepare-pr`. `incu-way-init` sets this up on first scaffold: ignore only the
+`ways` CLI's cache (`.ways/cache/`), never blanket-ignore `.ways/`.
+
+**Don't re-litigate an existing repo's choice.** If a repo already has `.ways/` blanket-ignored
+— a committed, pre-existing `.gitignore`, not something being scaffolded right now — that is
+the project's call, already made. Mention the resume-by-branch trade-off **once**, in passing
+(state resets to cold-start every session instead of resuming), and continue with the flow.
+Do not block on it, do not ask how to proceed, and do not raise it again in later sessions on
+the same repo. This only applies to a pre-existing rule; a *new* `.ways/` scaffold (fresh
+`incu-way-init`) still ignores only `.ways/cache/`, per that skill's Repo hygiene step.
