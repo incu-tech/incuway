@@ -171,8 +171,22 @@ via `incu-way-prepare-pr`. `incu-way-init` sets this up on first scaffold: ignor
 
 **Don't re-litigate an existing repo's choice.** If a repo already has `.ways/` blanket-ignored
 — a committed, pre-existing `.gitignore`, not something being scaffolded right now — that is
-the project's call, already made. Mention the resume-by-branch trade-off **once**, in passing
-(state resets to cold-start every session instead of resuming), and continue with the flow.
-Do not block on it, do not ask how to proceed, and do not raise it again in later sessions on
-the same repo. This only applies to a pre-existing rule; a *new* `.ways/` scaffold (fresh
-`incu-way-init`) still ignores only `.ways/cache/`, per that skill's Repo hygiene step.
+the project's call, already made. This only applies to a pre-existing rule; a *new* `.ways/`
+scaffold (fresh `incu-way-init`) still ignores only `.ways/cache/`, per that skill's Repo
+hygiene step.
+
+The trade-off (state resets to cold-start every session instead of resuming) is worth surfacing
+once, but a flow carries no memory across sessions — and `.ways/` can't hold that memory either,
+since it's exactly what's being ignored. The marker has to live in the one file both sides of
+this rule already read: `.gitignore` itself.
+
+- Before mentioning the trade-off, check whether the `.ways/` ignore line in `.gitignore` is
+  immediately followed by the marker comment `# incu/state-contract: resume-by-branch trade-off
+  acknowledged`. If it's already there, say nothing — this repo has already been told.
+- If it isn't there: mention the trade-off once, in passing, then add that marker comment right
+  after the `.ways/` ignore line, in the same `.gitignore` edit if the flow is already touching
+  that file, or as a standalone one-line edit otherwise. This is a normal tracked-file edit —
+  it follows the repo's usual commit flow like any other file, not the write-only/no-auto-commit
+  rule above (that rule is specific to `.ways/state.json`).
+- Do not block on it and do not ask how to proceed either way — mention (at most once, ever,
+  per repo) and continue with the flow.
