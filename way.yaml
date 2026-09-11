@@ -62,6 +62,7 @@ spec:
     - { id: arch-assessment, path: skills/incu-way-arch-assessment, uses: [vcs-host] }
     - { id: security-validation, path: skills/incu-way-security-validation, uses: [vcs-host] }
     - { id: threat-model, path: skills/incu-way-threat-model, uses: [vcs-host] }
+    - { id: babysit, path: skills/incu-way-babysit, uses: [vcs-host] }
     # The only skill that runs git add/commit/push or `gh pr create` — every flow defers
     # persistence to it, so an install without it dead-ends at every checkpoint.
     - { id: prepare-pr, path: skills/incu-way-prepare-pr, uses: [vcs-host] }
