@@ -152,8 +152,44 @@ docs/prds/{prd-slug}/PRD.md
 **Slug format:** `{zero-padded-id}-{kebab-feature-name}`
 Example: `003-contact-export`, `007-auto-tagging-rules`
 
-IDs are sequential across `docs/prds/` **and** `docs/requirements/` — check both to find
-the next ID. If this feature comes from an `incu-way-po` ticket, reuse the ticket's slug
+**Finding the next ID — check every place it could already be taken, not just this
+checkout.** A counter that only looks at the current branch collides the moment two
+features are worked in parallel, two worktrees/branches off the same base each compute
+the same "next" number independently, and this has happened in practice. Scanning alone
+does not close that: two agents can both scan at the same instant, both compute the same
+number, and only then create their directory. Hold a lock across the scan-and-reserve
+sequence so that cannot happen on one machine:
+
+0. Acquire a same-machine lock before scanning anything:
+   ```bash
+   LOCK="$(git rev-parse --git-common-dir)/incu-way-prd-slug.lock"
+   until mkdir "$LOCK" 2>/dev/null; do sleep 0.2; done
+   trap 'rmdir "$LOCK"' EXIT
+   ```
+   `mkdir` succeeds for exactly one process at a time, and `--git-common-dir` resolves to
+   the same shared path from every worktree of this repo (not just this checkout), so the
+   lock is visible across worktrees, which is exactly where this race happens in practice.
+   This is shared with `incu-way-po` (`incu-way-prd-slug.lock`, same id space:
+   `docs/prds/` + `docs/requirements/`), not with `incu-way-bugs` (a separate id space).
+1. List IDs already used in **this** checkout's `docs/prds/` and `docs/requirements/`.
+2. List every other worktree of this repo (`git worktree list`) and read **their**
+   `docs/prds/` and `docs/requirements/` too, a sibling worktree's PRD doesn't show up in
+   `git status` here, but it's sitting right there on disk.
+3. Fetch the default branch (`git fetch origin {default}`) and list what's already merged
+   there (`git ls-tree --name-only origin/{default} -- docs/prds/ docs/requirements/`), an
+   ID merged by someone else since this branch was created won't be in your local tree yet.
+
+Take the ID **one past the highest** found across all three, and **create
+`docs/prds/{id}-{slug}/` immediately, before releasing the lock** (even just an empty
+placeholder file is enough to reserve it). Only then let the lock go (the `trap` above
+does this automatically, including if a step above fails). That reservation, while the
+lock is still held, is what actually closes the same-machine race, not the scan by
+itself: a second agent's own step 1 can only start once the lock is free, and by then this
+id is already on disk. It still cannot close a true two-different-machines,
+never-fetched race, which is an inherent limit of a client-side counter with no central
+registry.
+
+If this feature comes from an `incu-way-po` ticket, reuse the ticket's slug
 so `docs/requirements/{slug}/` and `docs/prds/{slug}/` line up.
 
 ### PRD structure

@@ -138,7 +138,38 @@ docs/bugs/{bug-slug}/BUG.md
 **Slug format:** `{zero-padded-id}-{kebab-description}`
 Examples: `001-import-totals-zero`, `002-contact-dedup-missing`
 
-IDs are sequential. Check existing slugs in `docs/bugs/` for the next ID.
+**Finding the next ID — check every place it could already be taken, not just this
+checkout.** A counter that only looks at the current branch collides the moment two bugs
+are worked in parallel, two worktrees/branches off the same base each compute the same
+"next" number independently, and this has happened in practice (with PRDs; the same
+counter shape has the same failure mode here). Scanning alone does not close that: two
+agents can both scan at the same instant, both compute the same number, and only then
+create their directory. Hold a lock across the scan-and-reserve sequence so that cannot
+happen on one machine:
+
+0. Acquire a same-machine lock before scanning anything:
+   ```bash
+   LOCK="$(git rev-parse --git-common-dir)/incu-way-bug-slug.lock"
+   until mkdir "$LOCK" 2>/dev/null; do sleep 0.2; done
+   trap 'rmdir "$LOCK"' EXIT
+   ```
+   `mkdir` succeeds for exactly one process at a time, and `--git-common-dir` resolves to
+   the same shared path from every worktree of this repo, so the lock is visible across
+   worktrees. A separate lock name from `incu-way-development`/`incu-way-po`, since
+   `docs/bugs/` is its own id space, not shared with `docs/prds/`/`docs/requirements/`.
+1. List IDs already used in **this** checkout's `docs/bugs/`.
+2. List every other worktree of this repo (`git worktree list`) and read **their**
+   `docs/bugs/` too, a sibling worktree's bug doc doesn't show up in `git status` here,
+   but it's sitting right there on disk.
+3. Fetch the default branch (`git fetch origin {default}`) and list what's already merged
+   there (`git ls-tree --name-only origin/{default} -- docs/bugs/`), an ID merged by
+   someone else since this branch was created won't be in your local tree yet.
+
+Take the ID **one past the highest** found across all three, and **create
+`docs/bugs/{id}-{slug}/` immediately, before releasing the lock** (even just an empty
+placeholder file reserves it). Only then let the lock go (the `trap` above handles this
+automatically, including on failure). That reservation, while the lock is still held, is
+what actually closes the same-machine race, not the scan by itself.
 
 ### BUG.md structure
 
