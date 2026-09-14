@@ -1,6 +1,6 @@
 ---
 name: incu-way-prepare-pr
-version: 0.1.1
+version: 0.1.2
 description: The only skill in this repo that runs `git add`, `git commit`, `git push`, or `gh pr create`. Invoke ONLY when the user explicitly asks to commit, push, or open/prepare a PR (e.g. "commit this", "commit progress", "push this branch", "prepare the PR", "open the PR"). No other incu-way skill may invoke this automatically or run those git commands itself — they may only suggest it to the user.
 ---
 
@@ -61,10 +61,14 @@ no exceptions:
 ```
 
 **type** — one of `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`,
-`chore`, `revert`. These are the only valid values; there is no repo-specific type. Don't
-guess it — the calling flow's own SKILL.md already documents the commit-message format for
-its phase (look for a "commit message format" / "suggested commit message" section near the
-checkpoint the user is at), or infer it from the branch prefix:
+`chore`, `revert`. This exact list is an **Incu org policy**, not the Conventional Commits
+spec itself (the spec only defines semantic meaning for `feat`/`fix`; it doesn't close off
+the set of types). The policy exists to keep history greppable and consistent across every
+incu-tech repo: there is no repo-specific type outside this list, pick the closest one
+(usually `chore`) rather than inventing a new one. Don't guess it, the calling flow's own
+SKILL.md already documents the commit-message format for its phase (look for a "commit
+message format" / "suggested commit message" section near the checkpoint the user is at),
+or infer it from the branch prefix:
 
 | Branch prefix | type | scope |
 |---|---|---|
@@ -149,9 +153,20 @@ carry:
 
 Keep the technical substance — what broke, why, what changed, how it was validated —
 under a source-free framing (e.g. "reportado internamente", "detectado durante uso
-real"). If a document this PR links to (a BUG.md's `Context`, a PRD's intake notes,
-etc.) names someone or cites an internal thread, that's fine to leave in the doc
-itself — just never copy it into the PR body, branch name, or commit message.
+real").
+
+**This check covers the entire outgoing diff, not just the PR text.** Run
+`git diff {base}...{branch} --name-only` and look at every file this PR actually adds or
+changes, not only the PR body/branch/commit message. If a document this PR is introducing
+or modifying (a BUG.md's `Context`, a PRD's intake notes, etc.) names someone or cites an
+internal thread, that content ships to the public repo the moment this PR merges. Leaving
+it "in the doc itself" doesn't protect anything once the doc is part of a public diff.
+Sanitize that document (strip the name/channel/quote, reframe it the same source-free way
+as the PR body) before opening the PR, don't just avoid repeating it in the PR text.
+
+A document that names someone but was already committed to the repo in an **earlier**
+PR/commit, and that this PR's diff doesn't touch, is out of scope here. This check is
+about what this PR itself ships, not a retroactive audit of the whole repo's history.
 
 If the repo is private, none of this applies — write the PR normally.
 

@@ -27,4 +27,16 @@ require_contains "$FILE" "A person's name, handle, or initials"
 require_contains "$FILE" "The name of an internal channel"
 require_contains "$FILE" "A verbatim quote or close paraphrase of an internal conversation"
 
-printf 'PASS: public-repo PRs are checked for internal-attribution leaks\n'
+# The check has to cover the whole outgoing diff, not just the PR body/branch/commit
+# message: a linked document (BUG.md's Context, a PRD's intake notes) that this PR itself
+# adds or modifies ships to the public repo too, and has to be sanitized, not just avoided
+# in the PR text (see incu-tech/incuway PR #5 review).
+require_contains "$FILE" "covers the entire outgoing diff"
+require_contains "$FILE" "git diff {base}...{branch}"
+require_contains "$FILE" "Sanitize that document"
+
+# The 11-type allowlist is an org policy choice, not a claim about the Conventional
+# Commits spec itself (which only defines feat/fix, and doesn't close off the type set).
+require_contains "$FILE" "Incu org policy"
+
+printf 'PASS: public-repo PRs are checked for internal-attribution leaks across the whole diff, and the commit-type list is labeled as org policy\n'
