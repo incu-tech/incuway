@@ -1,6 +1,6 @@
 ---
 name: incu-way-development
-version: 0.1.1
+version: 0.1.2
 description: Use for product feature work that explicitly needs discovery, a PRD, gated implementation planning, or stakeholder approval before code changes. Trigger for ambiguous, cross-cutting, client-requested, or high-risk functionality changes. Do not trigger for small direct code edits, routine refactors, bug fixes, security scans, documentation-only work, or questions about existing code.
 ---
 

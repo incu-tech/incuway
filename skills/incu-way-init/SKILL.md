@@ -1,6 +1,6 @@
 ---
 name: incu-way-init
-version: 0.1.1
+version: 0.1.2
 description: Use when adopting incu-way in a repository for the first time — to bootstrap the project so the development, bug, and security flows have what they need. Detects greenfield (new, empty repo) vs brownfield (existing application — the common case), scaffolds CLAUDE.md, the docs/ tree, the branch model, and .ways/, and drives the architectural/functional documentation of the existing code. Also use to re-initialize or refresh a project that already uses incu-way.
 ---
 

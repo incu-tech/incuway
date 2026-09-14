@@ -1,6 +1,6 @@
 ---
 name: incu-way-prepare-pr
-version: 0.1.1
+version: 0.1.2
 description: The only skill in this repo that runs `git add`, `git commit`, `git push`, or `gh pr create`. Invoke ONLY when the user explicitly asks to commit, push, or open/prepare a PR (e.g. "commit this", "commit progress", "push this branch", "prepare the PR", "open the PR"). No other incu-way skill may invoke this automatically or run those git commands itself — they may only suggest it to the user.
 ---
 
@@ -49,20 +49,67 @@ say so and stop — there is nothing to commit.
 
 ## Step 3 — Propose a commit message
 
-Don't guess a generic message — the calling flow's own SKILL.md already documents the
-exact commit-message format for its phase (look for a "commit message format" /
-"suggested commit message" section near the checkpoint the user is at, or infer the
-type from the branch prefix: `feat/` → `feat({slug}): ...`, `fix/` → `fix({slug}): ...`,
-`fix/security-` → `fix(security): ...`, `chore/` → `chore(...)`, `docs/` → `docs({slug}): ...`,
-`assess/` → `assess({slug}): ...`). If no convention is evident, ask the user.
+Every commit is [**Conventional Commits**](https://www.conventionalcommits.org/en/v1.0.0/),
+no exceptions:
 
-If the state file `.ways/state.json` changed alongside other files, it is
-committed **together with** those files in the same commit — never in a separate,
-unannounced commit.
+```
+<type>(<scope>)<!>: <description>
 
-If more than one logical unit of work is staged/dirty (e.g. two unrelated checkpoints),
-say so and ask whether to split into separate commits rather than bundling them
-silently.
+<body>
+
+<footer>
+```
+
+**type** — one of `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`,
+`chore`, `revert`. This exact list is an **Incu org policy**, not the Conventional Commits
+spec itself (the spec only defines semantic meaning for `feat`/`fix`; it doesn't close off
+the set of types). The policy exists to keep history greppable and consistent across every
+incu-tech repo: there is no repo-specific type outside this list, pick the closest one
+(usually `chore`) rather than inventing a new one. Don't guess it, the calling flow's own
+SKILL.md already documents the commit-message format for its phase (look for a "commit
+message format" / "suggested commit message" section near the checkpoint the user is at),
+or infer it from the branch prefix:
+
+| Branch prefix | type | scope |
+|---|---|---|
+| `feat/{slug}` | `feat` | `{slug}` |
+| `fix/{slug}` | `fix` | `{slug}` |
+| `fix/security-{slug}` | `fix` | `security` |
+| `chore/{slug}` | `chore` | `{slug}` (omit if repo-wide, e.g. a version bump touching every file) |
+| `docs/{slug}` | `docs` | `{slug}` |
+| `assess/{slug}` | `docs` | `{slug}` (an assessment/threat-model/security-validation report is documentation — never invent a non-standard type like `assess:`) |
+
+If neither the branch prefix nor the calling flow's own format section makes the type
+obvious, ask the user rather than guess.
+
+**description** — imperative mood ("add", never "added"/"adds"), lowercase right after the
+colon, no trailing period, short enough that the whole `type(scope): description` line
+stays under ~72 columns. It states *what* changed; the body carries *why*.
+
+**`!`** — append immediately after the scope (or the type, if there's no scope) only when
+this commit breaks a documented contract: a schema, a public CLI flag, an on-disk format,
+anything a downstream consumer depends on. Always paired with a `BREAKING CHANGE:` footer
+explaining what breaks and how to adapt — never one without the other, and never used for
+an internal refactor with no externally observable break.
+
+**Body** — one blank line after the description, then prose wrapped at ~72 columns.
+Explains the reasoning a diff alone can't show: why this approach over an alternative, what
+it replaces, what a reviewer needs to know that isn't obvious from the code. It is never a
+restatement of the diff line by line, and it's optional for a change small enough that the
+description already says everything (a one-line typo fix doesn't need a body).
+
+**Footer** — one blank line after the body: `Closes #123` / `Refs #123` for an issue this
+resolves or relates to (only when one genuinely exists in this repo — never fabricate a
+number), and `BREAKING CHANGE: <description>` whenever `!` was used above.
+
+**Atomicity.** One logical change per commit — each one should build and pass its own
+tests/evals in isolation, so a future `git bisect` or a revert of just this commit never
+drags in unrelated work. If the state file `.ways/state.json` changed alongside other
+files, it's committed **together with** them in the same commit (it's metadata about that
+same change, not a separate one) — but if more than one *unrelated* logical unit of work is
+staged/dirty (e.g. two unrelated checkpoints, or a drive-by refactor riding along with an
+unrelated feature), say so and propose splitting into separate commits rather than bundling
+them silently.
 
 ### Gate — commit confirmation
 
@@ -82,6 +129,46 @@ If yes, draft the title/body using the same template the calling flow already de
 for its PR phase (summary, links to the relevant docs, the validation checklist, etc.
 — see the flow's own SKILL.md for the exact body it expects). Show the drafted
 title/body to the user.
+
+**The PR title is a Conventional Commits header** (`type(scope): description`, same rules
+as Step 3) — most repos here squash-merge, so the title *becomes* the permanent commit
+message. If the branch carries more than one commit with different types, pick the type of
+the change a reviewer would call the point of the PR (usually the last, most substantial
+one), not just the first commit's.
+
+### Public-repo content check (before drafting the body)
+
+Check whether `{base}`'s repo is public: `gh repo view {owner}/{repo} --json isPrivate -q .isPrivate`.
+Treat it as public whenever the check says so, or whenever it can't be run — never
+assume private by default.
+
+If the repo is public, the title, body, branch name, and commit messages must never
+carry:
+
+- A person's name, handle, or initials — not the reporter, not a reviewer, not anyone
+  quoted in an internal conversation.
+- The name of an internal channel (Slack or otherwise), or a date tied to one.
+- A verbatim quote or close paraphrase of an internal conversation (Slack, a meeting,
+  a DM).
+
+Keep the technical substance — what broke, why, what changed, how it was validated —
+under a source-free framing (e.g. "reportado internamente", "detectado durante uso
+real").
+
+**This check covers the entire outgoing diff, not just the PR text.** Run
+`git diff {base}...{branch} --name-only` and look at every file this PR actually adds or
+changes, not only the PR body/branch/commit message. If a document this PR is introducing
+or modifying (a BUG.md's `Context`, a PRD's intake notes, etc.) names someone or cites an
+internal thread, that content ships to the public repo the moment this PR merges. Leaving
+it "in the doc itself" doesn't protect anything once the doc is part of a public diff.
+Sanitize that document (strip the name/channel/quote, reframe it the same source-free way
+as the PR body) before opening the PR, don't just avoid repeating it in the PR text.
+
+A document that names someone but was already committed to the repo in an **earlier**
+PR/commit, and that this PR's diff doesn't touch, is out of scope here. This check is
+about what this PR itself ships, not a retroactive audit of the whole repo's history.
+
+If the repo is private, none of this applies — write the PR normally.
 
 ### Gate — push/PR confirmation
 
