@@ -87,6 +87,19 @@ cp path/to/incu-way/skills/incu-way-init/claude.template.md ./CLAUDE.md
 # Fill in the sections marked with [TODO: ...]
 ```
 
+## Repo hygiene: what goes in `.gitignore`
+
+`incu-way-init` always adds `.claude/` and `.agents/` to `.gitignore` — they hold
+placement output from `skills.sh`/`hooks.sh` (plus, for `.claude/`, Claude Code's own
+local settings), and every bit of it is regenerated from `ways.lock` /
+`skills-lock.json` / `steering-lock.json` by `ways install`. Treat them like
+`node_modules`: never commit, never ask.
+
+`.ways/` is different — it's **not** a blanket-ignore. `.ways/state.json` is a
+work-item's live phase/gate state and **must stay tracked** (resume-by-branch depends
+on it being committed via `incu-way-prepare-pr`). If the project also uses the `ways`
+CLI, ignore only its cache: add `.ways/cache/`, never the whole `.ways/`.
+
 ## Design principles
 
 - **Gate-driven:** no skill allows advancing without explicit user approval at the critical points.

@@ -1,6 +1,6 @@
 ---
 name: snyk-remediation
-version: 0.1.0
+version: 0.1.1
 description: >-
   Use for Snyk-driven security work: run Snyk SAST/SCA scans, review findings, triage scope, or
   produce an approved remediation plan before fixing vulnerabilities. Trigger only when the user
