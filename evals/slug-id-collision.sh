@@ -37,6 +37,12 @@ for file in "${id_assigning_files[@]}"; do
   require_contains "$file" "git worktree list"
   require_contains "$file" "Fetch the default branch"
   require_contains "$file" "one past the highest"
+  # Scanning more places isn't enough on its own: two agents can scan at the same instant
+  # and compute the same id. A same-machine lock across scan-and-reserve is what actually
+  # closes that (see incu-tech/incuway PR #6 review).
+  require_contains "$file" "git rev-parse --git-common-dir"
+  require_contains "$file" "mkdir \"\$LOCK\""
+  require_contains "$file" "before releasing the lock"
   # The old shallow phrasing (only checks the current checkout) must not survive verbatim.
   require_not_contains "$file" "check both to find"
   require_not_contains "$file" "Check existing slugs in \`docs/bugs/\` for the next ID."
