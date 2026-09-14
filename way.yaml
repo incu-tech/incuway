@@ -22,7 +22,7 @@ kind: WayFamily
 metadata:
   name: incu/incu-way
   displayName: Incuway
-  version: 2.0.0
+  version: 2.1.0
   description: The incuway family — the gated feature, bug and security flows as member ways, plus the shared onboarding, docs, refinement and assessment skills, the state contract, and the baseline conventions, installed as one.
   discipline: development
   publisher: incu

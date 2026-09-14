@@ -1,6 +1,6 @@
 ---
 name: incu-way-babysit
-version: 0.1.0
+version: 0.1.2
 description: Watches an existing, already-open PR (yours) until it's ready to merge — new bot (CodeRabbit, etc.) or human reviewer comments, unresolved review threads, and CI checks — and drafts a fix on the PR's branch when something is actionable. Self-contained single-invocation watch, polling runs in a background script so idle cycles cost no LLM turns — no `/loop` needed. Trigger on "babysit this PR", "watch this PR until it's mergeable", "keep an eye on PR #N", or `/incu-way-babysit <pr> <repo>`. Do not trigger for reviewing a PR yourself, opening/merging a PR, or watching a PR you don't own.
 ---
 
@@ -139,7 +139,11 @@ while true; do
     fi
   done < <(jq -r '.statusCheckRollup[]? | [(.name // .context), (.conclusion // .state // "")] | @tsv' <<<"$pr_json")
 
-  # unresolved review threads not seen before
+  # unresolved review threads — re-fetched fresh every cycle; $STATE/threads
+  # only dedupes which ones have already been announced, it is NOT the
+  # source of the current count (an append-only file can never shrink back
+  # to zero once a thread has been seen, even after it's resolved).
+  current_threads=$(fetch_unresolved_threads)
   while IFS=$'\t' read -r id path line author body; do
     [ -z "$id" ] && continue
     if ! grep -qF "$id" "$STATE/threads"; then
@@ -147,16 +151,19 @@ while true; do
       echo "$id" >> "$STATE/threads"
       activity=1
     fi
-  done < <(fetch_unresolved_threads)
+  done <<<"$current_threads"
+  unresolved_count=$(grep -c . <<<"$current_threads")
 
   [ "$activity" = "1" ] && last_activity=$(date +%s)
   since="$now_iso"
 
-  pending=$(jq -r '[.statusCheckRollup[]? | (.conclusion // .state // "PENDING")] | map(select(.=="" or .=="PENDING" or .=="IN_PROGRESS" or .=="QUEUED")) | length' <<<"$pr_json")
+  # Any check whose conclusion/state isn't one of these still blocks
+  # readiness — this covers pending/in-progress AND terminal failures alike,
+  # so a red check can never be reported as "ready to merge".
+  not_ok=$(jq -r '[.statusCheckRollup[]? | (.conclusion // .state // "PENDING")] | map(select(. != "SUCCESS" and . != "NEUTRAL" and . != "SKIPPED")) | length' <<<"$pr_json")
   review_decision=$(jq -r '.reviewDecision' <<<"$pr_json")
-  unresolved_count=$(wc -l < "$STATE/threads")
-  if [ "${pending:-1}" = "0" ] && [ "$review_decision" != "CHANGES_REQUESTED" ] && [ "$unresolved_count" -eq 0 ]; then
-    echo "PR #$PR looks ready to merge: checks done, review decision $review_decision, no unresolved threads."
+  if [ "${not_ok:-1}" = "0" ] && [ "$review_decision" != "CHANGES_REQUESTED" ] && [ "$unresolved_count" -eq 0 ]; then
+    echo "PR #$PR looks ready to merge: checks all successful, review decision $review_decision, no unresolved threads."
     break
   fi
 
