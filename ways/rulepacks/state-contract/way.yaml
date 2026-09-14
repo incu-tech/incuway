@@ -3,7 +3,7 @@ kind: RulePack
 metadata:
   name: incu/state-contract
   displayName: Ways State Contract
-  version: 1.0.0
+  version: 1.0.2
   # Implements the ways/v1alpha1 state standard (schemas/ways/v1alpha1/state.schema.json +
   # docs/standards/state-files.md). Lives here for now; ways is the intended long-term owner —
   # promote to a ways-published pack and switch consumers from `file:` to `pack: { source }`.

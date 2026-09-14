@@ -15,6 +15,15 @@ A gate-driven workflow for finding and fixing security vulnerabilities detected 
 
 ---
 
+## Repo eligibility check (before anything else)
+
+Before Phase 0, check `~/.ways/config.yaml`'s `blacklist` (format: incu-base's `global-config` rule, installed always-on)
+for the current repo. If it matches, tell the user this repo is blacklisted from incu-way
+and ask whether to proceed anyway (a one-off exception) or stop — do not run any phase
+until they answer. Missing file, or no match: proceed normally.
+
+---
+
 ## Phase 0 — Intake and Scan
 
 **Goal:** Collect all current vulnerabilities from SAST and SCA scans.

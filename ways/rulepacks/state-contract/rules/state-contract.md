@@ -165,6 +165,37 @@ what the flow uses to report the "next step".
 
 ## `.gitignore` note
 
-`.ways/state.json` **must stay tracked** (resume-by-branch depends on it being committed via
-`incu-way-prepare-pr`). If the `ways` CLI is in use, ignore only its cache — add `.ways/cache/`
-to `.gitignore`, **never** blanket-ignore `.ways/`.
+`.ways/state.json` **should stay tracked** — resume-by-branch depends on it being committed
+via `incu-way-prepare-pr`. `incu-way-init` sets this up on first scaffold: ignore only the
+`ways` CLI's cache (`.ways/cache/`), never blanket-ignore `.ways/`.
+
+**Don't re-litigate an existing repo's choice.** If a repo already has `.ways/` blanket-ignored
+— a committed, pre-existing `.gitignore`, not something being scaffolded right now — that is
+the project's call, already made. This only applies to a pre-existing rule; a *new* `.ways/`
+scaffold (fresh `incu-way-init`) still ignores only `.ways/cache/`, per that skill's Repo
+hygiene step.
+
+The trade-off (state resets to cold-start every session instead of resuming) is worth surfacing
+once, but a flow carries no memory across sessions — and `.ways/` can't hold that memory either,
+since it's exactly what's being ignored. The marker has to live in the one file both sides of
+this rule already read: `.gitignore` itself.
+
+- Before mentioning the trade-off, check whether the `.ways/` ignore line in `.gitignore` is
+  immediately followed by the marker comment `# incu/state-contract: resume-by-branch trade-off
+  acknowledged`. If it's already there, say nothing — this repo has already been told.
+- If it isn't there: mention the trade-off once, in passing, and continue with the flow. **Do
+  not write the marker yet if `isolationType` is still `null`.** This rule is always-on, so it
+  can fire before the flow has asked whether to work on the current branch or a new worktree —
+  writing to `.gitignore` at that point risks editing the wrong checkout entirely (isolation-first
+  exists for exactly this reason: no file gets written before that choice is made).
+- Once isolation is resolved (`isolationType` is `branch` or `worktree`, in whichever checkout
+  that resolves to), add the marker comment right after the `.ways/` ignore line, in the same
+  `.gitignore` edit if the flow is already touching that file there, or as a standalone one-line
+  edit in that checkout otherwise. This is a normal tracked-file edit, it follows the repo's
+  usual commit flow like any other file, not the write-only/no-auto-commit rule above (that rule
+  is specific to `.ways/state.json`).
+- If the session ends before isolation is chosen, don't write the marker at all. Mentioning the
+  trade-off again next session is the safe default — it costs a repeated one-line message, never
+  a write to a checkout that may turn out to be the wrong one.
+- Do not block on any of this and do not ask how to proceed — mention (at most once per session
+  before the marker exists) and continue with the flow.

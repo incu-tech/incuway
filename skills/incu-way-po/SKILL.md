@@ -28,6 +28,15 @@ pass and one ticket — not a discovery project. Depth follows ambiguity and bla
 
 ---
 
+## Repo eligibility check (before anything else)
+
+Before Phase 0, check `~/.ways/config.yaml`'s `blacklist` (format: incu-base's `global-config` rule, installed always-on)
+for the current repo. If it matches, tell the user this repo is blacklisted from incu-way
+and ask whether to proceed anyway (a one-off exception) or stop — do not run any phase
+until they answer. Missing file, or no match: proceed normally.
+
+---
+
 ## Phase 0 — Intake and feasibility survey (read-only)
 
 **Goal:** Understand the need and the ground truth of the code well enough to say what is
@@ -47,9 +56,13 @@ phase.
 ### Identify the affected repositories
 
 3. Ask the user which repositories are in scope for this product, or read the repo list
-   from the hub repo's `CLAUDE.md` (a `repos:` section) if one exists. For single-repo
-   products this is trivial; for multi-repo products (e.g. a web app + API + workers),
-   list every repo the need may touch before surveying.
+   from the hub repo's `CLAUDE.md` (a `repos:` section) if one exists — that always wins
+   when present, it's versioned with the product. If there's no `repos:` section, fall
+   back to `~/.ways/config.yaml`'s `linkedRepos` (format: incu-base's `global-config` rule, installed always-on): find the
+   group containing the current repo, if any, and treat its other members as in scope
+   unless the user says otherwise. For single-repo products this is trivial; for
+   multi-repo products (e.g. a web app + API + workers), list every repo the need may
+   touch before surveying.
 
 ### Feasibility pass (per repo, grounded in code)
 
@@ -144,8 +157,40 @@ the selected working location. Never write files to `develop` or `main` directly
 split.
 
 **Slug format:** `{zero-padded-id}-{kebab-ticket-name}` (e.g. `004-contact-export-api`).
-IDs are sequential across `docs/requirements/` **and** `docs/prds/` — check both to find
-the next ID, because the ticket slug becomes the PRD slug when development picks it up.
+The ticket slug becomes the PRD slug when development picks it up, so it has to be unique
+against both namespaces.
+
+**Finding the next ID — check every place it could already be taken, not just this
+checkout.** A counter that only looks at the current branch collides the moment two needs
+are worked in parallel, two worktrees/branches off the same base each compute the same
+"next" number independently, and this has happened in practice. Scanning alone does not
+close that: two agents can both scan at the same instant, both compute the same number,
+and only then create their directory. Hold a lock across the scan-and-reserve sequence so
+that cannot happen on one machine:
+
+0. Acquire a same-machine lock before scanning anything:
+   ```bash
+   LOCK="$(git rev-parse --git-common-dir)/incu-way-prd-slug.lock"
+   until mkdir "$LOCK" 2>/dev/null; do sleep 0.2; done
+   trap 'rmdir "$LOCK"' EXIT
+   ```
+   `mkdir` succeeds for exactly one process at a time, and `--git-common-dir` resolves to
+   the same shared path from every worktree of this repo, so the lock is visible across
+   worktrees. This is shared with `incu-way-development` (`incu-way-prd-slug.lock`, same
+   id space: `docs/requirements/` + `docs/prds/`), not with `incu-way-bugs`.
+1. List IDs already used in **this** checkout's `docs/requirements/` and `docs/prds/`.
+2. List every other worktree of this repo (`git worktree list`) and read **their**
+   `docs/requirements/` and `docs/prds/` too, a sibling worktree's ticket doesn't show up
+   in `git status` here, but it's sitting right there on disk.
+3. Fetch the default branch (`git fetch origin {default}`) and list what's already merged
+   there (`git ls-tree --name-only origin/{default} -- docs/requirements/ docs/prds/`), an
+   ID merged by someone else since this branch was created won't be in your local tree yet.
+
+Take the ID **one past the highest** found across all three, and **create
+`docs/requirements/{id}-{slug}/` immediately, before releasing the lock** (even just an
+empty placeholder file reserves it). Only then let the lock go (the `trap` above handles
+this automatically, including on failure). That reservation, while the lock is still held,
+is what actually closes the same-machine race, not the scan by itself.
 
 ### TICKET.md structure
 

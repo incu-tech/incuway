@@ -20,6 +20,15 @@ work — see the ways/v1alpha1 state contract, shipped as the always-on `state-c
 
 ---
 
+## Repo eligibility check (before anything else)
+
+Before Phase 0, check `~/.ways/config.yaml`'s `blacklist` (format: incu-base's `global-config` rule, installed always-on)
+for the current repo. If it matches, tell the user this repo is blacklisted from incu-way
+and ask whether to proceed anyway (a one-off exception) or stop — do not run any phase
+until they answer. Missing file, or no match: proceed normally.
+
+---
+
 ## Phase 0 — Orientation and mode detection
 
 **Goal:** Decide whether this is a greenfield or a brownfield repository, and whether
@@ -225,7 +234,22 @@ Add `.gitkeep` to the empty directories so they are committed. Do **not** create
 > `.ways/` is the canonical root for way state (`ways/v1alpha1`). If the project also uses
 > the `ways` CLI, that tool keeps a **cache** under `.ways/cache/` — see repo hygiene below.
 
-### 2.4 — Repo hygiene (only when needed)
+### 2.4 — Repo hygiene
+
+Always ensure `.gitignore` has these entries (append whichever are missing; never
+duplicate a line that's already there):
+
+```
+.claude/
+.agents/
+```
+
+`.claude/` and `.agents/` hold placement output from `skills.sh`/`hooks.sh` (and, for
+`.claude/`, Claude Code's own local settings) — every bit of it is regenerated from
+`ways.lock` / `skills-lock.json` / `steering-lock.json` by `ways install`, so it's exactly
+as disposable as `node_modules`: never commit it, and never ask before ignoring it.
+
+Only when relevant to this project:
 
 - Add `.worktrees/` to `.gitignore` if it isn't already
   ignored and lives inside the repo.
