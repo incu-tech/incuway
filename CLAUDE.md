@@ -133,7 +133,7 @@ Template for the `CLAUDE.md` of new projects, bundled inside `incu-way-init` so 
 - **No auto-commits:** no skill runs `git add`, `git commit`, `git push`, or `gh pr create` itself. `incu-way-prepare-pr` is the only skill that touches git persistence, and only when the user explicitly invokes it; every other skill may only suggest invoking it.
 - **Security scans in all validation:** the three scans (Snyk SAST, Snyk SCA, SonarQube) appear in the validation checklist of `incu-way-development` and `incu-way-bugs`.
 - **Uniform branch flow:** `feat/{slug}` or `fix/{slug}` → `develop` → `main`, always via PR, never a direct merge.
-- **Language:** all docs in this repo (SKILL.md, claude.template.md, CLAUDE.md, READMEs) are written in English.
+- **Language:** all docs in this repo (SKILL.md, claude.template.md, CLAUDE.md, READMEs) are written in English. **Explicit exception:** `.github/PULL_REQUEST_TEMPLATE.md` is written in Spanish, matching the org's actual PR/issue-writing convention for incu-tech repos (the team communicates and reviews in Spanish). It is a PR-authoring template, not agent-facing behavioral documentation, so the general rule above doesn't apply to it.
 
 ## How to add or modify a skill
 

@@ -1,6 +1,6 @@
 ---
 name: incu-way-po
-version: 0.1.2
+version: 0.1.3
 description: Use to turn a raw need, idea, or client request into development-ready tickets before any development flow starts — validate feasibility against the actual codebase(s), map affected repos and cross-repo contracts, and close open questions up front. Trigger for "refine this ticket", "write the requirements for X", "is X feasible", "prepare tickets for this need", or when a request spans multiple repositories. Do not trigger for tickets that are already well-specified, plain defect reports (use incu-way-bugs), or when the user asks to start building immediately.
 ---
 

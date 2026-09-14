@@ -1,6 +1,6 @@
 ---
 name: incu-way-arch-assessment
-version: 0.1.2
+version: 0.1.3
 description: Use to assess the software architecture of a codebase, a module, or the current branch's changes against quality attributes and design principles (coupling/cohesion, layering/hexagonal adherence, separation of concerns, scalability, maintainability, testability). Produces a traceable assessment report with rated findings and prioritized recommendations. Invoke standalone to audit a system or design, or from another flow (incu-way-development at planning, incu-way-docs, incu-way-init) to evaluate a proposed or existing design before committing to it. Especially important before a large change, a refactor decision, or when tech debt and structural risk need to be made explicit.
 ---
 

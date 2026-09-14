@@ -1,6 +1,6 @@
 ---
 name: incu-way-threat-model
-version: 0.1.2
+version: 0.1.3
 description: Use to build a small, focused threat model for the current work or new code — a feature, a service, an API, or the changes on the current branch. Decomposes the system into assets, entry points, and trust boundaries, enumerates threats with STRIDE, and records mitigations and residual risk in a traceable report with a data-flow diagram. Invoke standalone to threat-model a component, or from another flow (incu-way-development after the PRD/plan, incu-way-bugs for a security-relevant fix) to surface threats before code is written or shipped. Especially important for new external surfaces, auth/payment/PII flows, or trust-boundary changes.
 ---
 
