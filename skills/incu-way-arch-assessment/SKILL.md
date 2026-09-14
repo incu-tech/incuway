@@ -28,7 +28,7 @@ separate `incu-way-development` or `incu-way-bugs` work item.
 
 ## Repo eligibility check (before anything else)
 
-Before Phase 0, check `~/.ways/config.yaml`'s `blacklist` (format in the root `CLAUDE.md`)
+Before Phase 0, check `~/.ways/config.yaml`'s `blacklist` (format: incu-base's `global-config` rule, installed always-on)
 for the current repo. If it matches, tell the user this repo is blacklisted from incu-way
 and ask whether to proceed anyway (a one-off exception) or stop — do not run any phase
 until they answer. Missing file, or no match: proceed normally.
