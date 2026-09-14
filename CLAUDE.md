@@ -49,6 +49,7 @@ See `README.md` for the full project context.
     versioning.sh                  # Eval guarding skill-frontmatter/VERSION coherence (--fix to sync)
     isolation-choice.sh            # Eval guarding the branch/worktree choice
     no-auto-commit.sh              # Eval guarding that no flow commits/pushes/opens PRs itself
+    gitignore-hygiene.sh           # Eval guarding the .gitignore entries incu-way-init writes
     v0.2.0/                        # Behavior eval suite (task/rubric style)
 ```
 
@@ -89,6 +90,41 @@ live in the always-on `state-contract` rule (`ways/rulepacks/state-contract/`), 
 values (branch, initial phase, documents, gates) in a short "State tracking" section. The
 analytical flows (docs, arch-assessment, security-validation, threat-model, po) are **stateless** —
 a report under `docs/`, no `state.json`.
+
+## Global config: `~/.ways/config.yaml`
+
+A **user/machine-level** file, never part of any repo — it's how incu-way, installed once
+globally, still behaves per-repo instead of imposing the same structure everywhere.
+
+```yaml
+# ~/.ways/config.yaml
+blacklist:
+  - argenprop
+linkedRepos:
+  hrscheme:
+    - hrs-webapp
+    - hrs-backend
+    - hrs-landing
+    - hrs-esco-matching
+    - hrs-admin
+```
+
+- **`blacklist`** — repos incu-way should never impose its structure on (a repo with its
+  own flow and doc conventions already). Matched loosely against the current repo's git
+  remote `owner/repo` slug, or its local directory name when there's no remote — an entry
+  like `argenprop` matches any of those forms. **Every** incu-way skill checks this first,
+  before Phase 0, before writing or asking anything else: if the current repo matches, say
+  so and ask whether to proceed anyway (a one-off exception) or stop.
+- **`linkedRepos`** — named groups of repos that make up one multi-repo product (e.g.
+  `hrscheme`'s five repos). Used during discovery (`incu-way-po`, `incu-way-development`,
+  `incu-way-bugs`) to name sibling repos a change might affect, even when the request only
+  mentions one of them. **This is a fallback, not the primary source**: a hub repo's own
+  `CLAUDE.md` can declare a `repos:` section for its product, and that always wins when
+  present — it's versioned with the product and visible to the whole team, which a
+  personal machine-level file can never be. `linkedRepos` only fills in when no hub
+  declaration exists yet (a new or informally-tracked product).
+- The file is optional everywhere. Missing file, missing key, or no match for the current
+  repo — proceed exactly as if it didn't exist.
 
 ## What each skill does
 
@@ -141,7 +177,7 @@ Template for the `CLAUDE.md` of new projects, bundled inside `incu-way-init` so 
 2. Make sure the frontmatter has `name`, `version`, and `description`.
 3. Include explicit gates, an explicit isolation choice (branch or worktree), and a validation checklist with security scans.
 4. For version bumps, edit `VERSION`, run `bash evals/versioning.sh --fix` to sync every skill frontmatter, then `bash evals/versioning.sh` to verify.
-5. Run `./evals/isolation-choice.sh` if the change touches isolation, branch, or worktree; run `./evals/no-auto-commit.sh` if it touches committing, pushing, or PR creation.
+5. Run `./evals/isolation-choice.sh` if the change touches isolation, branch, or worktree; run `./evals/no-auto-commit.sh` if it touches committing, pushing, or PR creation; run `./evals/gitignore-hygiene.sh` if it touches `.gitignore` guidance.
 6. Update or add tasks in `evals/v0.2.0/` when the change affects observable agent behavior.
 7. Declare the skill in the root `way.yaml` under `spec.skills` (with its `uses` slot ids) — that is
    what places it on `ways add`. A skill that is **not** listed there never installs.

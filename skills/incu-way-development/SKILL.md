@@ -10,6 +10,15 @@ A structured, gate-driven workflow for shipping new features without guessing. S
 
 ---
 
+## Repo eligibility check (before anything else)
+
+Before Phase 0, check `~/.ways/config.yaml`'s `blacklist` (format: incu-base's `global-config` rule, installed always-on)
+for the current repo. If it matches, tell the user this repo is blacklisted from incu-way
+and ask whether to proceed anyway (a one-off exception) or stop — do not run any phase
+until they answer. Missing file, or no match: proceed normally.
+
+---
+
 ## Phase 0 — Discovery and Intake (before anything)
 
 Before writing a single line of code or project docs, gather enough product and codebase context to avoid drafting the wrong PRD.
@@ -33,6 +42,10 @@ Before writing a single line of code or project docs, gather enough product and 
    - likely affected modules, entry points, integrations, and tests
    - existing patterns that should be preserved
    - conflicts, overlaps, or dependencies with existing functionality
+   - other repos in the same product that might be affected — check the hub repo's
+     `CLAUDE.md` for a `repos:` section (wins when present), or fall back to
+     `~/.ways/config.yaml`'s `linkedRepos` (format: incu-base's `global-config` rule, installed always-on); neither
+     listing this repo just means it's a single-repo product
 5. Scale the depth of discovery to the request:
    - for small, well-specified changes, keep the pass lightweight
    - for ambiguous, cross-cutting, or client-sensitive requests, dig deeper before drafting anything

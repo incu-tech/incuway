@@ -2,8 +2,8 @@ apiVersion: ways/v1alpha1
 kind: RulePack
 metadata:
   name: incu/base-conventions
-  version: 1.0.0
-  description: Incu's baseline conventions (security-by-default, branch flow) shared across Incu ways.
+  version: 1.1.0
+  description: Incu's baseline conventions (security-by-default, branch flow, global config) shared across Incu ways.
   publisher: incu
 spec:
   knowledge:
@@ -15,3 +15,7 @@ spec:
       description: Uniform PR-only branch flow.
       applicability: { mode: always }
       file: rules/branch-flow.md
+    - id: global-config
+      description: "~/.ways/config.yaml schema: repo blacklist and linkedRepos."
+      applicability: { mode: always }
+      file: rules/global-config.md
