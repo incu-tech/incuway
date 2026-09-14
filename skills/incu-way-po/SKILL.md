@@ -28,6 +28,15 @@ pass and one ticket — not a discovery project. Depth follows ambiguity and bla
 
 ---
 
+## Repo eligibility check (before anything else)
+
+Before Phase 0, check `~/.ways/config.yaml`'s `blacklist` (format: incu-base's `global-config` rule, installed always-on)
+for the current repo. If it matches, tell the user this repo is blacklisted from incu-way
+and ask whether to proceed anyway (a one-off exception) or stop — do not run any phase
+until they answer. Missing file, or no match: proceed normally.
+
+---
+
 ## Phase 0 — Intake and feasibility survey (read-only)
 
 **Goal:** Understand the need and the ground truth of the code well enough to say what is
@@ -47,9 +56,13 @@ phase.
 ### Identify the affected repositories
 
 3. Ask the user which repositories are in scope for this product, or read the repo list
-   from the hub repo's `CLAUDE.md` (a `repos:` section) if one exists. For single-repo
-   products this is trivial; for multi-repo products (e.g. a web app + API + workers),
-   list every repo the need may touch before surveying.
+   from the hub repo's `CLAUDE.md` (a `repos:` section) if one exists — that always wins
+   when present, it's versioned with the product. If there's no `repos:` section, fall
+   back to `~/.ways/config.yaml`'s `linkedRepos` (format: incu-base's `global-config` rule, installed always-on): find the
+   group containing the current repo, if any, and treat its other members as in scope
+   unless the user says otherwise. For single-repo products this is trivial; for
+   multi-repo products (e.g. a web app + API + workers), list every repo the need may
+   touch before surveying.
 
 ### Feasibility pass (per repo, grounded in code)
 

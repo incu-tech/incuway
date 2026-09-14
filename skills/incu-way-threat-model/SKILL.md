@@ -31,6 +31,15 @@ diagram and a handful of threats, not a 40-page document. Depth follows risk.
 
 ---
 
+## Repo eligibility check (before anything else)
+
+Before Phase 0, check `~/.ways/config.yaml`'s `blacklist` (format: incu-base's `global-config` rule, installed always-on)
+for the current repo. If it matches, tell the user this repo is blacklisted from incu-way
+and ask whether to proceed anyway (a one-off exception) or stop — do not run any phase
+until they answer. Missing file, or no match: proceed normally.
+
+---
+
 ## Phase 0 — Scope and decomposition
 
 **Goal:** Understand the system slice well enough to reason about threats. Read-only.
