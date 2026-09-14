@@ -183,10 +183,19 @@ this rule already read: `.gitignore` itself.
 - Before mentioning the trade-off, check whether the `.ways/` ignore line in `.gitignore` is
   immediately followed by the marker comment `# incu/state-contract: resume-by-branch trade-off
   acknowledged`. If it's already there, say nothing — this repo has already been told.
-- If it isn't there: mention the trade-off once, in passing, then add that marker comment right
-  after the `.ways/` ignore line, in the same `.gitignore` edit if the flow is already touching
-  that file, or as a standalone one-line edit otherwise. This is a normal tracked-file edit —
-  it follows the repo's usual commit flow like any other file, not the write-only/no-auto-commit
-  rule above (that rule is specific to `.ways/state.json`).
-- Do not block on it and do not ask how to proceed either way — mention (at most once, ever,
-  per repo) and continue with the flow.
+- If it isn't there: mention the trade-off once, in passing, and continue with the flow. **Do
+  not write the marker yet if `isolationType` is still `null`.** This rule is always-on, so it
+  can fire before the flow has asked whether to work on the current branch or a new worktree —
+  writing to `.gitignore` at that point risks editing the wrong checkout entirely (isolation-first
+  exists for exactly this reason: no file gets written before that choice is made).
+- Once isolation is resolved (`isolationType` is `branch` or `worktree`, in whichever checkout
+  that resolves to), add the marker comment right after the `.ways/` ignore line, in the same
+  `.gitignore` edit if the flow is already touching that file there, or as a standalone one-line
+  edit in that checkout otherwise. This is a normal tracked-file edit, it follows the repo's
+  usual commit flow like any other file, not the write-only/no-auto-commit rule above (that rule
+  is specific to `.ways/state.json`).
+- If the session ends before isolation is chosen, don't write the marker at all. Mentioning the
+  trade-off again next session is the safe default — it costs a repeated one-line message, never
+  a write to a checkout that may turn out to be the wrong one.
+- Do not block on any of this and do not ask how to proceed — mention (at most once per session
+  before the marker exists) and continue with the flow.
