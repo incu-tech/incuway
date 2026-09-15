@@ -1,6 +1,6 @@
 ---
 name: incu-way-docs
-version: 0.1.2
+version: 0.1.3
 description: Use to produce or refresh the architectural and functional documentation of an existing codebase (brownfield) so that humans and the incu-way flows understand the application. Invoked by incu-way-init during brownfield onboarding, or standalone to document a module or refresh stale docs. Especially important when the repo has real code but no living architecture docs, or when the existing docs have drifted from the code.
 ---
 

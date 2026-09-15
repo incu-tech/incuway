@@ -1,6 +1,6 @@
 ---
 name: incu-way-bugs
-version: 0.1.2
+version: 0.1.3
 description: Use for bug, regression, broken behavior, or production issue reports that need expected behavior, reproduction evidence, root cause analysis, or a fix plan before code changes. Trigger when the report is incomplete, high-impact, user-facing, or likely tied to recent changes. Do not trigger for new feature work, security scan remediation, documentation-only requests, or tiny direct fixes where the user explicitly asks to patch now.
 ---
 
