@@ -28,6 +28,8 @@ See `README.md` for the full project context.
       SKILL.md                     # Small STRIDE threat model on current work or new code (2–3 gates)
     incu-way-po/
       SKILL.md                     # Ticket/requirements refinement flow: raw need → development-ready tickets (3 gates)
+    incu-way-babysit/
+      SKILL.md                     # Self-contained watch on an open PR (comments, reviews, checks) until it's mergeable — no state.json
     incu-way-development/
       SKILL.md                     # Feature development flow (Phase 0–5, 5 gates)
     incu-way-bugs/
@@ -145,6 +147,9 @@ Builds a small, focused STRIDE threat model for the current work or new code —
 
 ### `incu-way-po`
 Turns a raw need, idea, or client request into **development-ready tickets** before any development flow starts. Phase 0 surveys the affected repositories (multi-repo aware — e.g. a product spanning web + API + workers) and runs a feasibility pass traceable to code: what the system supports today, what is possible, what is not without larger work, and which cross-repo contracts change. Flow: intake + feasibility survey → scope and ticket split (gate 1) → branch/worktree (`po/{slug}`) → one `docs/requirements/{slug}/TICKET.md` per ticket → **Definition of Ready** review (gate 2 — no ticket leaves with unresolved open questions unless explicitly deferred) → hand-off (optional Jira sync, **only on explicit user request**) → PR (gate 3). `incu-way-development` / `incu-way-bugs` consume the TICKET.md in their Phase 0, so discovery verifies instead of re-deriving. Analytical flow — no `state.json`.
+
+### `incu-way-babysit`
+Watches an already-open PR (yours) until it's ready to merge: new bot (CodeRabbit, etc.) or human reviewer comments, unresolved review threads, and CI checks. All polling runs inside one background `Monitor` script — no repeated agent turns, no `/loop` — and only surfaces a chat message when something actually changes. Drafts a fix on the PR's branch when a comment/thread/failed check is actionable, then stops for approval before doing anything durable: pushing goes through `incu-way-prepare-pr`, replying/resolving threads needs an explicit confirm. Doesn't create a new branch (it attaches to the PR's existing one) and keeps no `state.json` — a monitor, not a gated work item.
 
 ### `incu-way-development`
 Full life cycle for new features. Explicit gates at each phase prevent Claude from writing code before the user approves the PRD and the plan. Flow: orientation → branch or worktree choice → PRD (gate 1) → PLAN (gate 2) → implementation → validation + scans (gate 3) → PR feat→develop (gate 4) → PR develop→main (gate 5).
