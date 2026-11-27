@@ -28,9 +28,10 @@ npx skills add https://github.com/incu-tech/incuway.git --skill incu-way-develop
 
 ### Install as a way family
 
-The repo is also an installable **WayFamily** (`way.yaml`, `ways/v1alpha1`): the three gated
+The repo is also an installable **WayFamily** (`way.yaml`, `ways/v1alpha1`): the four gated
 work-item flows as **member ways** — `incu/dev` (feature), `incu/bugs` (bug), `incu/security`
-(security remediation), each with its own phases and gates — plus the payload they share: the
+(security remediation) and `incu/specs-from-code` (functional specs extracted from existing code),
+each with its own phases and gates — plus the payload they share: the
 other skills, the always-on knowledge rules (state contract, security and branch-flow
 conventions), and the capability slots with their default bindings.
 
@@ -53,6 +54,7 @@ installed. See [`ways/README.md`](./ways/README.md) for the artifacts and how to
 | `incu-way-arch-assessment` | `/incu-way-arch-assessment` | Assess architecture (a repo, a module, or the branch diff) against quality attributes — rated findings + prioritized recommendations |
 | `incu-way-security-validation` | `/incu-way-security-validation` | Validate code against common rulesets (OWASP Top 10/ASVS/API, CWE Top 25) control-by-control — complements the Snyk scans |
 | `incu-way-threat-model` | `/incu-way-threat-model` | Build a small STRIDE threat model for the current work or new code — DFD, threats, mitigations, residual risk |
+| `specs-from-code` | `/specs-from-code` | Extract what existing code does into functional specs (any stack): evidenced inventory, capability map, and one signed behavioral spec + contract per capability, with every entry point accounted for |
 | `incu-way-po` | `/incu-way-po` | Turn a raw need into development-ready tickets — feasibility validated against code, cross-repo gaps mapped, open questions closed before development starts |
 | `incu-way-development` | `/incu-way-development` | Full life cycle for new features: PRD → plan → implementation → validation → PR |
 | `incu-way-bugs` | `/incu-way-bugs` | Life cycle for bugs: documentation → analysis → reproduction test → fix → PR |

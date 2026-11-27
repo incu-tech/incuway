@@ -34,12 +34,17 @@ See `README.md` for the full project context.
       SKILL.md                     # Bug-fixing flow (Phase 0–7, 2 gates)
     snyk-remediation/
       SKILL.md                     # Snyk security remediation flow (Phase 0–6, 5 gates)
+    specs-from-code/
+      SKILL.md                     # Extracts what existing code does into functional specs (3 gates)
+      schemas/, scripts/,          # inventory.schema.json (stack-agnostic contract), check_coverage.py,
+      templates/, references/      # SPEC/QUESTIONS/… templates, entry-point detection signals per stack
     incu-way-prepare-pr/
       SKILL.md                     # User-invoked commit/push/PR skill — the only skill that touches git persistence
   way.yaml                         # Installable WayFamily manifest (ways/v1alpha1) — members + shared skills/knowledge/slots
   ways/
-    incu-dev/, incu-bugs/,         # The three member Ways (one gated work-item flow each,
-    incu-security/                 # referenced by way.yaml spec.members)
+    incu-dev/, incu-bugs/,         # The four member Ways (one gated work-item flow each,
+    incu-security/,                # referenced by way.yaml spec.members)
+    specs-from-code/
     rulepacks/
       state-contract/              # Canonical .ways/state.json contract, placed as an always-on rule on `ways add`
       incu-base/                   # Baseline conventions (security, branch-flow)
@@ -56,7 +61,7 @@ See `README.md` for the full project context.
 ## Ways artifacts: the family and its members
 
 The root `way.yaml` is a **`kind: WayFamily`** (`incu/incu-way`) — it declares no `flow` of its own
-(that is a schema error on a family). It *references* three **member Ways**, one per gated
+(that is a schema error on a family). It *references* four **member Ways**, one per gated
 work-item flow, and carries the payload shared across them:
 
 | Member id | Manifest | Way | Flow | Driven by |
@@ -64,13 +69,14 @@ work-item flow, and carries the payload shared across them:
 | `dev` | `ways/incu-dev/way.yaml` | `incu/dev` | feature — 8 phases, 5 gates | `skills/incu-way-development` |
 | `bugs` | `ways/incu-bugs/way.yaml` | `incu/bugs` | bug — 9 phases, 2 gates | `skills/incu-way-bugs` |
 | `security` | `ways/incu-security/way.yaml` | `incu/security` | security — 8 phases, 5 gates | `skills/snyk-remediation` |
+| `specs` | `ways/specs-from-code/way.yaml` | `incu/specs-from-code` | analysis/specs — 7 phases, 3 gates | `skills/specs-from-code` |
 
 Rules to keep this coherent when editing:
 
 - **Members are the flows that keep state.** The analytical/bootstrap flows (init, docs, po,
   arch-assessment, security-validation, threat-model) and `prepare-pr` are **shared skills** of the
   family, not members — they produce a document under `docs/` and keep no `state.json`.
-- **Member phase ids match the state contract enums** (`feature` / `bug` / `security` in
+- **Member phase ids match the state contract enums** (`feature` / `bug` / `security` / `analysis/specs` in
   `ways/rulepacks/state-contract/rules/state-contract.md`). Change one, change the other.
 - **Skills are declared at the family level, never inside a member.** A member is installed from its
   own directory, so a `path: ../../skills/…` would escape the bundle and fail the install.
@@ -83,7 +89,7 @@ Rules to keep this coherent when editing:
 
 ## State tracking: `.ways/state.json`
 
-The gated flows (`feature` / `bug` / `security`) keep **one** `.ways/state.json` per
+The gated flows (`feature` / `bug` / `security` / `analysis/specs`) keep **one** `.ways/state.json` per
 worktree/branch (`ways/v1alpha1`). Its **format and life cycle are not restated here** — they
 live in the always-on `state-contract` rule (`ways/rulepacks/state-contract/`), enforced by
 `state.schema.json` in the ways package. Each flow's SKILL.md carries only its flow-specific
@@ -154,6 +160,9 @@ Life cycle for reported or discovered bugs. The only critical gate is the FIX_PL
 
 ### `snyk-remediation`
 Complete process for scanning and remediating SAST + SCA vulnerabilities. Flow: scan → findings table (gate 1: user chooses scope) → branch or worktree choice → FINDINGS.md → PLAN.md (gate 2) → fix per finding → re-scan → RESOLUTION.md (gate 3) → PR fix→develop (gate 4) → PR develop→main (gate 5). Drives the `incu/security` member way (`ways/incu-security/way.yaml`), which is the `way` value its `state.json` records.
+
+### `specs-from-code`
+Extracts what an existing component does, on any stack and including polyglot repos, from the code itself into functional specs. The code is the source of truth; existing docs are cross-checked and every conflict becomes a question. The output is defined by `schemas/inventory.schema.json` and the templates, not by a scanner. Flow: orientation + mode (new / refresh) + scope → branch/worktree (`specs/{slug}`) → evidenced inventory (`inventory.json` + `INVENTORY.md`) → capability map (gate 1: boundaries, exclusions, scope; `scripts/check_coverage.py` confirms every entry point is assigned or excluded) → one behavioral `SPEC.md` + contract (OpenAPI / AsyncAPI / GraphQL / `contract.md` by entry-point kind) + closed-question `QUESTIONS.md` per capability (gate 2: sign-off per capability) → coverage matrix → PR (gate 3). Unlike `incu-way-docs` (narrative architecture), it pins testable behavior; its signed specs feed a migration, a rewrite, a black-box suite or `incu-way-po` feasibility. It drives the `incu/specs-from-code` member (`flow: analysis/specs`) and keeps a `state.json` with one `steps[]` entry per in-scope capability, because a component is specified over several sessions. Output: `docs/specs/{slug}/`.
 
 ### `incu-way-prepare-pr`
 The only skill that runs `git add`, `git commit`, `git push`, or `gh pr create`. Every other skill only writes files and *suggests* invoking this one at checkpoints and before opening a PR — none of them call it automatically or run those git commands themselves. It only runs when the **user** explicitly asks for it (by name, or "commit this", "push this", "prepare the PR"). Operates on whatever the caller's current item is (reads `.ways/state.json` if present) but keeps no state file of its own.

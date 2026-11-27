@@ -5,9 +5,10 @@
 # (`spec.members`) plus the payload shared across them (skills, knowledge, slots, requires).
 #
 # A family has NO `flow` of its own: each member way carries its own phase model and gate model.
-# That is the point of this artifact — incuway ships three genuinely different gated flows
-# (feature: 8 phases/5 gates · bug: 9 phases/2 gates · security: 8 phases/5 gates), which the
-# old root manifest could only fake by declaring the feature flow as if it were the family's.
+# That is the point of this artifact — incuway ships four genuinely different gated flows
+# (feature: 8 phases/5 gates · bug: 9 phases/2 gates · security: 8 phases/5 gates ·
+# specs: 7 phases/3 gates), which the old root manifest could only fake by declaring the
+# feature flow as if it were the family's.
 #
 # Bundled `path:`/`file:` values are relative to this repo root and must not escape it (no `..`).
 # Because a member way is installed from ITS OWN directory, the flow-driving skills are declared
@@ -27,7 +28,7 @@ metadata:
   discipline: development
   publisher: incu
   homepage: https://github.com/incu-tech/incuway
-  keywords: [incu, workflow, gates, development, bugs, security]
+  keywords: [incu, workflow, gates, development, bugs, security, specs]
 
 spec:
   # ── Members ───────────────────────────────────────────────────────────────────────────────
@@ -39,6 +40,7 @@ spec:
     - { id: dev, path: ways/incu-dev }           # incu/dev      → skills/incu-way-development
     - { id: bugs, path: ways/incu-bugs }         # incu/bugs     → skills/incu-way-bugs
     - { id: security, path: ways/incu-security } # incu/security → skills/snyk-remediation
+    - { id: specs, path: ways/specs-from-code }  # incu/specs-from-code → skills/specs-from-code
 
   # ── Shared skills ─────────────────────────────────────────────────────────────────────────
   # Placed once for the whole family. Two groups:
@@ -55,6 +57,7 @@ spec:
     - { id: development, path: skills/incu-way-development, uses: [vcs-host, sast, sca, code-quality] }
     - { id: bugs, path: skills/incu-way-bugs, uses: [vcs-host, sast, sca, code-quality] }
     - { id: snyk-remediation, path: skills/snyk-remediation, uses: [vcs-host, sast, sca] }
+    - { id: specs-from-code, path: skills/specs-from-code, uses: [vcs-host] }
     # 2. Building blocks shared by every member
     - { id: init, path: skills/incu-way-init, uses: [vcs-host] }
     - { id: docs, path: skills/incu-way-docs, uses: [vcs-host] }
@@ -72,7 +75,7 @@ spec:
   # `pack:` form needs the registry to resolve; promote these to `pack: { name, source,
   # versionConstraint }` once the packs are published externally.
   knowledge:
-    # THE canonical state contract — how the three member flows read/write .ways/state.json.
+    # THE canonical state contract — how the four member flows read/write .ways/state.json.
     # Always-on so it is in context whenever any of them runs.
     - id: state-contract
       description: Canonical .ways/state.json contract (ways/v1alpha1) — envelope, enums, lifecycle, read/write points.
