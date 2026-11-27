@@ -1,0 +1,85 @@
+# incu/specs-from-code — extracts what existing code does into functional specs, as a member way of
+# the incu/incu-way family.
+#
+# Reads an existing component (any stack) and produces a schema-validated inventory, a capability
+# map, and one signed behavioral spec + contract + closed questions per capability, with a coverage
+# matrix proving every entry point is accounted for.
+#
+# Driven by `skills/specs-from-code` (declared at the family level — see /way.yaml and
+# ways/README.md "Layout"). This manifest is the canonical description of the FLOW. Its phase ids
+# match the `analysis/specs` phase enum of the state contract
+# (ways/rulepacks/state-contract/rules/state-contract.md). The new phases are namespaced
+# (`analysis/…`) because they extend the development-profile enum.
+#
+# Validate:  ways validate ways/specs-from-code/way.yaml       (run from the repo root)
+#            ways conformance ways/specs-from-code/way.yaml
+apiVersion: ways/v1alpha1
+kind: Way
+metadata:
+  name: incu/specs-from-code
+  displayName: Specs from Code
+  version: 0.1.0
+  description: Extracts what existing code does into functional specs (inventory → capability map → signed behavioral spec per capability → coverage → PR), on any stack.
+  discipline: analysis
+  publisher: incu
+  keywords: [incu, specs, reverse-engineering, inventory, functional, stack-agnostic]
+
+spec:
+  # Way-specific rules only. The shared payload (state contract, security, branch-flow) is
+  # declared once by the family — a member does not restate it.
+  knowledge:
+    - id: specs-from-code-conventions
+      description: Way-specific conventions for functional specs (behavior not structure, evidence, no secrets, read-only).
+      applicability: { mode: always }
+      file: rules/conventions.md
+
+  requires:
+    cli:
+      - name: git
+        check: git --version
+        required: true
+      - name: gh
+        check: gh --version
+        versionConstraint: '>=2.0.0'
+        install: 'brew install gh  (https://cli.github.com)'
+        required: true
+        capability: vcs-host
+
+  # Read-only over the code: no scans, no build. Only the PR host.
+  needs:
+    - id: vcs-host
+      displayName: Version-control host
+      description: Hosts the repo and PRs — where the specs PR is opened and reviewed.
+      contract: ways.dev/vcs-host@1
+      required: true
+      providerSource: environment
+      options: [github, gitlab, bitbucket]
+
+  defaults:
+    bindings:
+      vcs-host: github
+
+  flow:
+    # `analysis/specs` phases, per the state contract:
+    # discovery → analysis/inventory → analysis/capability-map → analysis/spec → analysis/coverage → pr → done
+    phases:
+      - { id: discovery, label: Orientation, mode & scope }
+      - { id: analysis/inventory, label: Inventory }
+      - { id: analysis/capability-map, label: Capability map }
+      - { id: analysis/spec, label: Specs (per capability) }
+      - { id: analysis/coverage, label: Coverage & index }
+      - { id: pr, label: PR specs→develop }
+      - { id: done, label: Done }
+    gates:
+      - { id: capability-map, label: Capability map & scope review, afterPhase: analysis/capability-map, approval: user, enforcement: blocking }
+      - { id: spec, label: Spec sign-off (every in-scope capability), afterPhase: analysis/spec, approval: user, enforcement: blocking, dependsOn: [capability-map] }
+      - { id: pr, label: PR specs→develop, afterPhase: pr, approval: user, enforcement: blocking, dependsOn: [spec] }
+    generates:
+      - { name: inventory.json, pathTemplate: 'docs/specs/{slug}/inventory.json', producedInPhase: analysis/inventory, gate: capability-map, required: true }
+      - { name: INVENTORY.md, pathTemplate: 'docs/specs/{slug}/INVENTORY.md', producedInPhase: analysis/inventory, gate: capability-map, required: true }
+      - { name: CAPABILITIES.md, pathTemplate: 'docs/specs/{slug}/CAPABILITIES.md', producedInPhase: analysis/capability-map, gate: capability-map, statusField: Status, required: true }
+      - { name: SPEC.md, pathTemplate: 'docs/specs/{slug}/{capability}/SPEC.md', producedInPhase: analysis/spec, gate: spec, statusField: Status, required: true }
+      - { name: QUESTIONS.md, pathTemplate: 'docs/specs/{slug}/{capability}/QUESTIONS.md', producedInPhase: analysis/spec, gate: spec, required: true }
+      - { name: contract, pathTemplate: 'docs/specs/{slug}/{capability}/contract.*', producedInPhase: analysis/spec, gate: spec }
+      - { name: README.md, pathTemplate: 'docs/specs/{slug}/README.md', producedInPhase: analysis/coverage, gate: pr, required: true }
+    state: .ways/state.json

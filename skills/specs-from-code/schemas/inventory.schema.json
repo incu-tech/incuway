@@ -1,0 +1,232 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://incu.tech/schemas/specs-from-code/inventory.schema.json",
+  "title": "specs-from-code component inventory",
+  "description": "Stack-agnostic inventory of ONE component (a service, app, worker, library or module): what it exposes (entry points), what it calls (outbound), what it stores, and how sure we are of each fact. The schema is the contract; how the inventory is produced (knowledge graph, code reading, an optional stack-specific scanner) is free. Unknown values are null with an explicit entry in warnings[] — never invented.",
+  "type": "object",
+  "required": ["schemaVersion", "component", "stacks", "entryPoints", "outbound", "dataStores", "tests", "warnings"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "generatedAt": { "type": "string", "format": "date-time" },
+
+    "component": {
+      "type": "object",
+      "required": ["name", "slug", "scopePaths", "baselineCommit"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "slug": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+        "kind": {
+          "description": "What the component is, as observed.",
+          "enum": ["service", "web-app", "worker", "function", "cli", "library", "module", "monolith", "other", null]
+        },
+        "scopePaths": {
+          "description": "Repo-relative paths that bound the component (\".\" for the whole repo).",
+          "type": "array", "minItems": 1, "items": { "type": "string" }
+        },
+        "baselineCommit": {
+          "description": "The commit the inventory describes. null only if the component is not under git (then a warning is required).",
+          "type": ["string", "null"]
+        },
+        "size": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "files": { "type": ["integer", "null"] },
+            "loc": { "type": ["integer", "null"] }
+          }
+        }
+      }
+    },
+
+    "stacks": {
+      "description": "Every language/runtime/framework detected in scope. A polyglot component lists several.",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["language", "evidence"],
+        "additionalProperties": false,
+        "properties": {
+          "language": { "type": "string" },
+          "runtime": { "type": ["string", "null"] },
+          "frameworks": { "type": "array", "items": { "type": "string" } },
+          "buildTool": { "type": ["string", "null"] },
+          "paths": { "type": "array", "items": { "type": "string" } },
+          "evidence": { "$ref": "#/$defs/evidenceList" }
+        }
+      }
+    },
+
+    "entryPoints": {
+      "description": "The inbound surface: every way the outside world (users, other services, schedulers, operators, importing code) can trigger behavior. An empty array is valid only with a warning explaining why (e.g. a pure library scoped out).",
+      "type": "array",
+      "items": { "$ref": "#/$defs/entryPoint" }
+    },
+
+    "outbound": {
+      "description": "Everything the component calls or emits: downstream HTTP/gRPC, messages produced, third-party SDKs, email/SMS, file drops.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "kind", "target", "evidence"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string" },
+          "kind": { "enum": ["http", "grpc", "graphql", "message", "sdk", "email", "sms", "file", "other"] },
+          "target": { "type": "string", "description": "Host/service/topic/provider as configured (never a secret value)." },
+          "operations": { "type": "array", "items": { "type": "string" } },
+          "timeoutMs": { "type": ["integer", "null"] },
+          "retries": { "type": ["string", "null"], "description": "Retry policy as observed, e.g. '3x exponential', 'none'." },
+          "usedBy": { "type": "array", "items": { "type": "string" }, "description": "entryPoint ids that reach this call." },
+          "evidence": { "$ref": "#/$defs/evidenceList" }
+        }
+      }
+    },
+
+    "dataStores": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "kind", "evidence"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string" },
+          "kind": { "enum": ["relational", "document", "key-value", "cache", "search", "object-storage", "file-system", "queue-backed", "other"] },
+          "technology": { "type": ["string", "null"] },
+          "entities": { "type": "array", "items": { "type": "string" }, "description": "Tables/collections/buckets/key prefixes owned or touched." },
+          "access": { "enum": ["read", "write", "read-write", null] },
+          "evidence": { "$ref": "#/$defs/evidenceList" }
+        }
+      }
+    },
+
+    "configuration": {
+      "description": "Behavior-changing configuration: feature flags, toggles, tenant/env switches. Names only — never values of secrets.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["key", "evidence"],
+        "additionalProperties": false,
+        "properties": {
+          "key": { "type": "string" },
+          "kind": { "enum": ["feature-flag", "env", "config-file", "remote-config", "other"] },
+          "affects": { "type": "array", "items": { "type": "string" }, "description": "entryPoint ids whose behavior it changes." },
+          "secret": { "type": "boolean", "description": "true when the key holds a credential, token or connection string. Its value is never recorded anywhere." },
+          "evidence": { "$ref": "#/$defs/evidenceList" }
+        }
+      }
+    },
+
+    "tests": {
+      "type": "object",
+      "required": ["types", "coverage"],
+      "additionalProperties": false,
+      "properties": {
+        "types": {
+          "type": "array",
+          "items": { "enum": ["unit", "integration", "contract", "e2e", "ui", "snapshot", "property", "none"] }
+        },
+        "frameworks": { "type": "array", "items": { "type": "string" } },
+        "coverage": {
+          "description": "Line coverage 0..1 from an existing report; null if no report exists (with a warning).",
+          "type": ["number", "null"], "minimum": 0, "maximum": 1
+        }
+      }
+    },
+
+    "usageSource": {
+      "description": "Where usage numbers came from (access logs, APM, queue metrics, analytics). null when none was provided — then every usage is null.",
+      "type": ["object", "null"],
+      "required": ["kind", "window"],
+      "additionalProperties": false,
+      "properties": {
+        "kind": { "type": "string" },
+        "window": { "type": "string", "description": "e.g. '30d'." },
+        "file": { "type": ["string", "null"] }
+      }
+    },
+
+    "knowledgeGraph": {
+      "type": "object",
+      "required": ["status"],
+      "additionalProperties": false,
+      "properties": {
+        "status": { "enum": ["absent", "current", "stale"] },
+        "path": { "type": ["string", "null"] },
+        "stalePaths": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+
+    "warnings": {
+      "description": "Every degradation, gap or assumption, stated verbatim for the reader. Never empty by omission: if there are none, contain the single string 'none'.",
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string" }
+    }
+  },
+
+  "$defs": {
+    "evidence": {
+      "type": "object",
+      "required": ["source", "ref"],
+      "additionalProperties": false,
+      "properties": {
+        "source": {
+          "description": "How the fact was established. graph-inferred and docs never back a signed spec on their own.",
+          "enum": ["code", "config", "graph-extracted", "graph-inferred", "docs", "scanner", "usage-data"]
+        },
+        "ref": { "type": "string", "description": "path:line, config key, graph node id, or doc path." }
+      }
+    },
+    "evidenceList": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/evidence" } },
+
+    "entryPoint": {
+      "type": "object",
+      "required": ["id", "kind", "trigger", "handler", "evidence"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "pattern": "^EP-[0-9]{3,}$" },
+        "kind": {
+          "enum": ["http", "graphql", "grpc", "websocket", "message", "webhook", "schedule", "cli", "ui-route", "function", "library-export", "db-trigger", "other"]
+        },
+        "trigger": {
+          "description": "Kind-specific address of the entry point. Fill the fields that apply; leave the rest out.",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "method": { "type": "string", "description": "http/webhook verb." },
+            "path": { "type": "string", "description": "http/webhook/ui-route path template." },
+            "operation": { "type": "string", "description": "graphql Query/Mutation/Subscription field, grpc Service/Method, websocket event." },
+            "destination": { "type": "string", "description": "message: queue/topic/subject/stream." },
+            "broker": { "type": "string", "description": "message: sqs, kafka, rabbitmq, nats, pubsub, eventbridge…" },
+            "ackMode": { "type": "string", "description": "message: auto, manual, at-least-once…" },
+            "schedule": { "type": "string", "description": "schedule: cron/rate expression as configured." },
+            "command": { "type": "string", "description": "cli: command and subcommand." },
+            "symbol": { "type": "string", "description": "library-export/function: exported name or function name." },
+            "event": { "type": "string", "description": "function/db-trigger: event source." }
+          }
+        },
+        "handler": { "type": "string", "description": "path:line of the code that handles it." },
+        "auth": { "type": ["string", "null"], "description": "Auth requirement as observed (e.g. 'bearer JWT, scope payments:write', 'none', 'mTLS'). null if not determinable." },
+        "usage": {
+          "description": "Observed volume in usageSource.window; null when no usage source (never guessed). 0 marks a dead-surface candidate.",
+          "type": ["integer", "null"], "minimum": 0
+        },
+        "capability": { "type": ["string", "null"], "description": "CAP-id assigned in the capability-map phase; null before it, and null when excluded." },
+        "exclusion": {
+          "description": "Set in the capability-map phase when the entry point is deliberately not assigned to a capability (capability stays null). Lets coverage be checked from the inventory alone.",
+          "type": ["object", "null"],
+          "required": ["reason"],
+          "additionalProperties": false,
+          "properties": {
+            "reason": { "type": "string", "minLength": 1, "description": "e.g. 'dead-surface candidate (usage 0 in 30d)', 'health/infra', 'internal-only'." },
+            "recommendation": { "type": ["string", "null"], "description": "e.g. 'retire candidate', 'spec later', 'out of scope'." }
+          }
+        },
+        "evidence": { "$ref": "#/$defs/evidenceList" }
+      }
+    }
+  }
+}

@@ -34,6 +34,7 @@ skill_files=(
   "skills/incu-way-development/SKILL.md"
   "skills/incu-way-bugs/SKILL.md"
   "skills/snyk-remediation/SKILL.md"
+  "skills/specs-from-code/SKILL.md"
 )
 
 for file in "${skill_files[@]}"; do

@@ -119,11 +119,14 @@ Every enumerated field is a closed `enum` **or** a namespaced `<discipline>/<nam
 (pattern `^[a-z][a-z0-9-]*/[a-z][a-z0-9-]*$`, e.g. `qa/regression`). A bare unknown value (a
 typo like `fature`) is invalid; extensions must be explicitly namespaced.
 
-- **`flow`**: `feature` · `bug` · `security` — or a namespaced extension.
+- **`flow`**: `feature` · `bug` · `security` — or a namespaced extension. This family ships one:
+  `analysis/specs` (the `incu/specs-from-code` way).
 - **`phase`** (per flow; the schema enum is their union) — or a namespaced extension:
   - feature: `discovery` → `prd` → `plan` → `implementation` → `validation` → `pr-develop` → `pr-main` → `done`
   - bug: `discovery` → `document` → `analysis` → `reproduction` → `fix-plan` → `implementation` → `validation` → `pr` → `done`
   - security: `scan` → `findings` → `plan` → `implementation` → `validation` → `pr-develop` → `pr-main` → `done`
+  - analysis/specs: `discovery` → `analysis/inventory` → `analysis/capability-map` → `analysis/spec` → `analysis/coverage` → `pr` → `done`
+    (the `analysis/…` phases are namespaced extensions; `steps[]` holds one entry per in-scope capability)
 - **`documents[].status`**: `pending` · `draft` · `in-review` · `approved` · `done`
 - **`gates[].status`**: `pending` · `passed`. PR gates (`pr-develop`, `pr-main`, `pr`) accept an
   optional **`url`**; they stay `pending` while the PR is open and become `passed` once merged.
